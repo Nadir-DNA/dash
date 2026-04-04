@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/* Nothing Design Theme */
+@theme {
+  --color-nothing-black: #0A0A0A;
+  --color-nothing-white: #FFFFFF;
+  --color-nothing-gray: #888888;
+  --color-nothing-red: #FF0000;
+  --color-nothing-border: #222222;
+  
+  --font-nothing: 'Montserrat', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* Base Styles */
+body {
+  background-color: var(--color-nothing-black);
+  color: var(--color-nothing-white);
+  font-family: var(--font-body);
+}
+
+/* Nothing Button */
+.btn-nothing {
+  border: 1px solid var(--color-nothing-border);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-nothing:hover {
+  border-color: var(--color-nothing-red);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+/* Nothing Card */
+.card-nothing {
+  background-color: transparent;
+  border: 1px solid var(--color-nothing-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* Nothing Progress Bar */
+.progress-nothing {
+  background-color: var(--color-nothing-border);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-nothing-fill {
+  background-color: var(--color-nothing-white);
+  height: 100%;
+  transition: all 0.5s ease;
+}
+
+.progress-nothing-critical {
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+/* KPI Card */
+.kpi-card {
+  background-color: transparent;
+  border: 1px solid var(--color-nothing-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kpi-title {
+  color: var(--color-nothing-gray);
+  font-size: 0.875rem;
+}
+
+.kpi-value {
+  color: var(--color-nothing-white);
+  font-size: 1.5rem;
+  font-family: var(--font-nothing);
+  font-weight: bold;
+}
+
+.kpi-target {
+  color: var(--color-nothing-gray);
+  font-size: 0.875rem;
+}
+
+/* Status Indicators */
+.status-success {
+  color: #22c55e;
+}
+
+.status-warning {
+  color: #eab308;
+}
+
+.status-critical {
+  color: var(--color-nothing-red);
+}
+
+/* Mobile First Responsive */
+.mobile-menu {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--color-nothing-black);
+  border-top: 1px solid var(--color-nothing-border);
+  padding: 0.5rem;
+  display: flex;
+  justify-content:space-around;
+  align-items: center;
+}
+
+.desktop-menu {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 16rem;
+  background-color: var(--color-nothing-black);
+  border-right: 1px solid var(--color-nothing-border);
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktop-menu {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Glow Effects */
+.glow-red {
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+}
+
+.glow-white {
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-nothing-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-nothing-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-nothing-gray);
+}
