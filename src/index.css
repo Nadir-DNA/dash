@@ -1,15 +1,13 @@
 @import "tailwindcss";
 
-/* Nothing Design - Glyph Interface */
+/* Nothing Glyph Interface - Complete */
 @theme {
   --color-nothing: #000000;
   --color-glyph-on: #FFFFFF;
   --color-glyph-off: #1A1A1A;
   --color-glyph-dim: #333333;
-  --color-accent: #FFFFFF;
 }
 
-/* Reset */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -19,29 +17,45 @@
 body {
   background: #000000;
   color: #FFFFFF;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', monospace;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
-/* Glyph Dots */
-.glyph-grid {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
+/* === GLYPH MATRIX FONT === */
+/* Chaque caractère est une grille 5x7 de points */
+.glyph-char {
+  display: inline-grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 1px;
+  width: 30px;
+  height: 42px;
+}
+
+.glyph-char-sm {
+  width: 20px;
+  height: 28px;
+}
+
+.glyph-char-lg {
+  width: 36px;
+  height: 50px;
+}
+
+.glyph-char-xl {
+  width: 48px;
+  height: 67px;
 }
 
 .glyph-dot {
-  width: 6px;
-  height: 6px;
   background: #1A1A1A;
-  border-radius: 50%;
-  transition: all 0.3s ease;
+  border-radius: 1px;
+  transition: all 0.15s ease;
 }
 
-.glyph-dot.active {
+.glyph-dot.on {
   background: #FFFFFF;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
 }
 
 .glyph-dot.breathing {
@@ -49,201 +63,313 @@ body {
 }
 
 @keyframes breathe {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.1); }
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
-/* Glyph Bar */
-.glyph-bar {
+/* Glyph Text Line */
+.glyph-text {
+  display: flex;
+  gap: 4px;
+}
+
+.glyph-text-sm {
+  gap: 2px;
+}
+
+.glyph-text-spaced {
+  gap: 8px;
+}
+
+/* === GLYPH NUMBERS === */
+.glyph-number {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.glyph-digit {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 1px;
+  width: 18px;
+  height: 30px;
+}
+
+.glyph-digit-lg {
+  width: 24px;
+  height: 40px;
+}
+
+.glyph-digit-xl {
+  width: 32px;
+  height: 53px;
+}
+
+/* === LAYOUT === */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Menu */
+.menu-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  background: #000000;
+  border-right: 1px solid #1A1A1A;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  z-index: 100;
+}
+
+.menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 2px solid transparent;
+}
+
+.menu-item:hover {
+  background: #0A0A0A;
+}
+
+.menu-item.active {
+  border-left-color: #FFFFFF;
+  background: #0A0A0A;
+}
+
+.menu-icon {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+  width: 18px;
+  height: 18px;
+  margin-bottom: 4px;
+}
+
+.menu-icon-dot {
+  background: #333333;
+  width: 4px;
   height: 4px;
+  border-radius: 1px;
+}
+
+.menu-item.active .menu-icon-dot,
+.menu-item:hover .menu-icon-dot {
+  background: #FFFFFF;
+}
+
+.menu-label {
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #333333;
+}
+
+.menu-item.active .menu-label,
+.menu-item:hover .menu-label {
+  color: #666666;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 64px;
+  padding: 32px;
+  max-width: 1200px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .menu-sidebar {
+    bottom: 0;
+    top: auto;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 64px;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid #1A1A1A;
+    padding: 0;
+  }
+  
+  .menu-item {
+    flex: 1;
+    flex-direction: column;
+    padding: 8px 0;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+  }
+  
+  .menu-item.active {
+    border-bottom-color: #FFFFFF;
+    border-left-color: transparent;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    margin-bottom: 64px;
+    padding: 16px;
+  }
+}
+
+/* === CARDS === */
+.glyph-card {
+  background: transparent;
+  border: 1px solid #1A1A1A;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.glyph-card:hover {
+  border-color: #333333;
+}
+
+/* === GLYPH VISUAL ELEMENTS === */
+.glyph-progress-bar {
+  display: flex;
+  gap: 1px;
+  height: 32px;
+  align-items: flex-end;
+}
+
+.glyph-bar-segment {
+  width: 8px;
   background: #1A1A1A;
-  border-radius: 2px;
-  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.glyph-bar-segment.filled {
+  background: #FFFFFF;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+}
+
+.glyph-circle-progress {
+  width: 80px;
+  height: 80px;
   position: relative;
 }
 
-.glyph-bar-fill {
-  height: 100%;
-  background: #FFFFFF;
-  border-radius: 2px;
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
-  transition: width 1s ease-out;
+.glyph-circle-progress svg {
+  transform: rotate(-90deg);
 }
 
-/* Glyph Progress (Points style) */
-.glyph-progress {
+.glyph-circle-bg {
+  stroke: #1A1A1A;
+}
+
+.glyph-circle-fill {
+  stroke: #FFFFFF;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
+}
+
+/* === GLYPH GRID === */
+.glyph-grid-small {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+}
+
+.glyph-grid-large {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  gap: 2px;
+}
+
+.glyph-grid-dot {
+  width: 6px;
+  height: 6px;
+  background: #1A1A1A;
+  border-radius: 1px;
+}
+
+.glyph-grid-dot.on {
+  background: #FFFFFF;
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
+}
+
+.glyph-grid-dot.breathing {
+  animation: breathe 2s ease-in-out infinite;
+}
+
+/* === SECTION HEADER === */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.section-dots {
   display: flex;
   gap: 2px;
 }
 
-.glyph-segment {
+.section-dot {
   width: 4px;
-  height: 24px;
-  background: #1A1A1A;
+  height: 4px;
+  background: #333333;
   border-radius: 1px;
-  transition: all 0.2s ease;
 }
 
-.glyph-segment.filled {
-  background: #FFFFFF;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
-}
-
-.glyph-segment.partial {
-  background: #666666;
-}
-
-/* Card Minimal */
-.card-glyph {
-  background: transparent;
-  border: 1px solid #1A1A1A;
-  padding: 1.5rem;
-  transition: all 0.2s ease;
-}
-
-.card-glyph:hover {
-  border-color: #333333;
-}
-
-/* Typography Minimal */
-.text-micro {
+.section-title {
   font-size: 10px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #666666;
 }
 
-.text-value {
-  font-size: 32px;
+/* === KPI DISPLAY === */
+.kpi-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.kpi-number {
+  font-size: 48px;
   font-weight: 200;
   letter-spacing: -0.02em;
   color: #FFFFFF;
 }
 
-.text-label {
-  font-size: 11px;
+.kpi-unit {
+  font-size: 16px;
   color: #666666;
-  letter-spacing: 0.03em;
 }
 
-/* Layout */
-.screen {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  max-width: 100%;
+.kpi-target {
+  font-size: 12px;
+  color: #444444;
 }
 
-@media (min-width: 768px) {
-  .screen {
-    padding: 48px;
-    max-width: 960px;
-    margin: 0 auto;
-  }
-}
-
-/* Header */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 48px;
-}
-
-/* KPI Grid */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  margin-bottom: 48px;
-}
-
-@media (min-width: 768px) {
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* KPI Item */
-.kpi-item {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-}
-
-.kpi-visual {
-  flex-shrink: 0;
-}
-
-.kpi-data {
-  flex: 1;
-}
-
-/* Network Grid */
-.network-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-.network-item {
-  text-align: center;
-  padding: 16px;
-}
-
-/* Select Minimal */
-.select-glyph {
+/* === SELECTOR === */
+.glyph-selector {
   background: transparent;
   border: 1px solid #1A1A1A;
   color: #666666;
-  padding: 8px 32px 8px 12px;
-  font-size: 11px;
-  letter-spacing: 0.03em;
+  padding: 8px 24px 8px 12px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
   appearance: none;
   cursor: pointer;
-  border-radius: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666666' stroke-width='1'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
 }
 
-.select-glyph:hover {
+.glyph-selector:hover {
   border-color: #333333;
   color: #FFFFFF;
 }
 
-.select-glyph option {
+.glyph-selector option {
   background: #000000;
   color: #FFFFFF;
-}
-
-/* Status Indicator */
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #1A1A1A;
-}
-
-.status-dot.active {
-  background: #FFFFFF;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
-  animation: breathe 2s ease-in-out infinite;
-}
-
-/* Divider */
-.divider {
-  height: 1px;
-  background: #1A1A1A;
-  margin: 24px 0;
-}
-
-/* Section Title */
-.section-title {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #333333;
-  margin-bottom: 24px;
 }
