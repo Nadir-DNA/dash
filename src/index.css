@@ -1,11 +1,10 @@
 @import "tailwindcss";
 
-/* Nothing Glyph Interface - Full Screen Dashboard */
+/* Nothing Glyph Interface - ALL GLYPHS */
 @theme {
   --color-nothing: #000000;
   --color-glyph-on: #FFFFFF;
   --color-glyph-off: #1A1A1A;
-  --color-glyph-dim: #333333;
 }
 
 * {
@@ -23,38 +22,44 @@ html, body, #root {
 body {
   background: #000000;
   color: #FFFFFF;
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: 'Inter', monospace;
 }
 
-/* === GLYPH DOTS === */
+/* === GLYPH MATRIX FONT === */
+.glyph-digit-grid {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 1px;
+}
+
+.glyph-digit-sm { width: 15px; height: 25px; }
+.glyph-digit-md { width: 21px; height: 35px; }
+.glyph-digit-lg { width: 27px; height: 45px; }
+.glyph-digit-xl { width: 36px; height: 60px; }
+
 .glyph-dot {
-  background: #1A1A1A;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  background: #1A1A1A;
+  transition: all 0.15s ease;
 }
 
 .glyph-dot.on {
   background: #FFFFFF;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
 }
 
-.glyph-dot.breathing {
-  animation: breathe 2s ease-in-out infinite;
+.glyph-number {
+  display: inline-flex;
+  gap: 3px;
 }
 
-@keyframes breathe {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
-}
-
-/* === LAYOUT FULL SCREEN === */
+/* === LAYOUT === */
 .dashboard {
   height: 100vh;
   width: 100vw;
   display: grid;
   grid-template-columns: 64px 1fr;
-  grid-template-rows: 1fr;
-  background: #000000;
 }
 
 @media (max-width: 768px) {
@@ -96,27 +101,17 @@ body {
 @media (max-width: 768px) {
   .menu-item {
     flex: 1;
-    flex-direction: column;
-    padding: 8px 0;
     border-left: none;
     border-bottom: 2px solid transparent;
   }
 }
 
-.menu-item:hover {
-  background: #0A0A0A;
-}
-
-.menu-item.active {
-  border-left-color: #FFFFFF;
-  background: #0A0A0A;
-}
+.menu-item:hover { background: #0A0A0A; border-left-color: #333; }
+.menu-item.active { background: #0A0A0A; border-left-color: #FFFFFF; }
 
 @media (max-width: 768px) {
-  .menu-item.active {
-    border-left-color: transparent;
-    border-bottom-color: #FFFFFF;
-  }
+  .menu-item:hover { border-bottom-color: #333; }
+  .menu-item.active { border-bottom-color: #FFFFFF; }
 }
 
 .menu-icon {
@@ -137,9 +132,7 @@ body {
 }
 
 .menu-item.active .menu-icon-dot,
-.menu-item:hover .menu-icon-dot {
-  background: #FFFFFF;
-}
+.menu-item:hover .menu-icon-dot { background: #FFFFFF; }
 
 .menu-label {
   font-size: 8px;
@@ -149,23 +142,179 @@ body {
 }
 
 .menu-item.active .menu-label,
-.menu-item:hover .menu-label {
-  color: #666666;
-}
+.menu-item:hover .menu-label { color: #666666; }
 
-/* ===MAIN CONTENT === */
+/* === MAIN === */
 .main {
   overflow: auto;
-  padding: 24px;
+  padding: 32px 48px;
   display: flex;
   flex-direction: column;
 }
 
-@media (min-width: 769px) {
-  .main {
-    padding: 32px 48px;
-  }
+@media (max-width: 768px) {
+  .main { padding: 16px; }
 }
+
+/* === GLYPH CIRCLE === */
+.glyph-circle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glyph-circle-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid #1A1A1A;
+}
+
+.glyph-circle-ring.active {
+  border-color: #FFFFFF;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.glyph-circle-center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* === GLYPH LINE CHART === */
+.glyph-line-chart {
+  position: relative;
+  width: 100%;
+  height: 180px;
+}
+
+.glyph-line-grid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.glyph-line-row {
+  display: flex;
+  gap: 2px;
+}
+
+.glyph-line-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #1A1A1A;
+}
+
+.glyph-line-dot.on { background: #333333; }
+.glyph-line-dot.active { background: #FFFFFF; box-shadow: 0 0 2px rgba(255, 255, 255, 0.4); }
+
+/* === GLYPH GAUGE === */
+.glyph-gauge {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.glyph-gauge-segment {
+  width: 4px;
+  height: 12px;
+  border-radius: 2px;
+  background: #1A1A1A;
+}
+
+.glyph-gauge-segment.on {
+  background: #FFFFFF;
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+/* === GLYPH GRID === */
+.glyph-grid {
+  display: grid;
+  gap: 2px;
+}
+
+.glyph-grid-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #1A1A1A;
+}
+
+.glyph-grid-dot.on {
+  background: #FFFFFF;
+  box-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* === CARDS === */
+.card {
+  background: transparent;
+  border: 1px solid #1A1A1A;
+  padding: 24px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #666666;
+}
+
+.card-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.card-unit {
+  font-size: 12px;
+  color: #666666;
+}
+
+/* === SELECTOR === */
+.selector {
+  background: transparent;
+  border: 1px solid #1A1A1A;
+  color: #FFFFFF;
+  padding: 8px 24px 8px 12px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  appearance: none;
+  cursor: pointer;
+}
+
+.selector:hover { border-color: #333333; }
+
+/* === GRIDS === */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) { .charts-grid { grid-template-columns: 1fr; } }
 
 /* === HEADER === */
 .header {
@@ -188,261 +337,15 @@ body {
   color: #666666;
 }
 
-.project-selector {
-  background: transparent;
-  border: 1px solid #1A1A1A;
-  color: #FFFFFF;
-  padding: 8px 28px 8px 12px;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  appearance: none;
-  cursor: pointer;
-  border-radius: 0;
-}
-
-/* === KPI GRID === */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  margin-bottom: 32px;
-}
-
-@media (min-width: 1024px) {
-  .kpi-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.kpi-card {
-  background: transparent;
-  border: 1px solid #1A1A1A;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  min-height: 180px;
-}
-
-.kpi-label {
+/* === TEXT === */
+.text-micro {
   font-size: 10px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #666666;
-  margin-bottom: 16px;
 }
 
-.kpi-value-row {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.kpi-value {
-  font-size: 36px;
-  font-weight: 200;
-  letter-spacing: -0.02em;
-}
-
-.kpi-unit {
-  font-size: 14px;
-  color: #666666;
-}
-
-.kpi-target {
+.text-label {
   font-size: 11px;
-  color: #444444;
-}
-
-/* === CIRCULAR PROGRESS === */
-.circle-progress {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0 auto;
-}
-
-.circle-progress svg {
-  transform: rotate(-90deg);
-}
-
-.circle-bg {
-  stroke: #1A1A1A;
-  fill: none;
-}
-
-.circle-fill {
-  stroke: #FFFFFF;
-  fill: none;
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
-  transition: stroke-dashoffset 1s ease;
-}
-
-.circle-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-
-.circle-value {
-  font-size: 28px;
-  font-weight: 200;
-  letter-spacing: -0.02em;
-}
-
-.circle-label {
-  font-size: 9px;
-  letter-spacing: 0.05em;
   color: #666666;
-  text-transform: uppercase;
-}
-
-/* === LINE CHART === */
-.line-chart {
-  height: 200px;
-  position: relative;
-  margin: 16px 0;
-}
-
-.line-chart-grid {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.grid-line {
-  border-top: 1px solid #1A1A1A;
-  height: 0;
-}
-
-.line-chart-svg {
-  position: absolute;
-  inset: 0;
-}
-
-.line-chart-line {
-  fill: none;
-  stroke: #FFFFFF;
-  stroke-width: 1.5;
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
-}
-
-.line-chart-area {
-  fill: url(#lineGradient);
-  opacity: 0.1;
-}
-
-.line-chart-dots {
-  fill: #FFFFFF;
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
-}
-
-.line-chart-labels {
-  position: absolute;
-  bottom: -20px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-}
-
-.line-chart-label {
-  font-size: 9px;
-  color: #444444;
-  letter-spacing: 0.03em;
-}
-
-/* === AREA CHART GAUGE === */
-.gauge-chart {
-  position: relative;
-  width: 100%;
-  height: 8px;
-  background: #1A1A1A;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.gauge-fill {
-  height: 100%;
-  background: #FFFFFF;
-  border-radius: 4px;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-  transition: width 1s ease;
-}
-
-/* === SECTION === */
-.section {
-  margin-bottom: 32px;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.section-dots {
-  display: flex;
-  gap: 2px;
-}
-
-.section-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #333333;
-}
-
-.section-dot.active {
-  background: #FFFFFF;
-}
-
-.section-title {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #666666;
-}
-
-/* === CHARTS GRID === */
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-}
-
-@media (min-width: 1024px) {
-  .charts-grid {
-    grid-template-columns: 2fr 1fr;
-  }
-}
-
-.chart-card {
-  background: transparent;
-  border: 1px solid #1A1A1A;
-  padding: 24px;
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.chart-title {
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #666666;
-}
-
-.chart-value {
-  font-size: 24px;
-  font-weight: 200;
 }
