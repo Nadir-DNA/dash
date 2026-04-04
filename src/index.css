@@ -49,13 +49,13 @@ body {
 
 .glyph-dot {
   background: #1A1A1A;
-  border-radius: 1px;
+  border-radius: 50%;
   transition: all 0.15s ease;
 }
 
 .glyph-dot.on {
   background: #FFFFFF;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
 }
 
 .glyph-dot.breathing {
@@ -84,7 +84,7 @@ body {
 /* === GLYPH NUMBERS === */
 .glyph-number {
   display: inline-flex;
-  gap: 1px;
+  gap: 2px;
 }
 
 .glyph-digit {
@@ -92,18 +92,18 @@ body {
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(5, 1fr);
   gap: 1px;
+  width: 12px;
+  height: 20px;
+}
+
+.glyph-digit-lg {
   width: 18px;
   height: 30px;
 }
 
-.glyph-digit-lg {
+.glyph-digit-xl {
   width: 24px;
   height: 40px;
-}
-
-.glyph-digit-xl {
-  width: 32px;
-  height: 53px;
 }
 
 /* === LAYOUT === */
@@ -158,9 +158,9 @@ body {
 
 .menu-icon-dot {
   background: #333333;
-  width: 4px;
-  height: 4px;
-  border-radius: 1px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
 }
 
 .menu-item.active .menu-icon-dot,
@@ -243,14 +243,15 @@ body {
 }
 
 .glyph-bar-segment {
-  width: 8px;
+  width: 4px;
   background: #1A1A1A;
+  border-radius: 1px;
   transition: all 0.2s ease;
 }
 
 .glyph-bar-segment.filled {
   background: #FFFFFF;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
 .glyph-circle-progress {
@@ -286,15 +287,15 @@ body {
 }
 
 .glyph-grid-dot {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
   background: #1A1A1A;
-  border-radius: 1px;
+  border-radius: 50%;
 }
 
 .glyph-grid-dot.on {
   background: #FFFFFF;
-  box-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
 .glyph-grid-dot.breathing {
