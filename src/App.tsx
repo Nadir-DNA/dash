@@ -1,10 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // Types
 interface Project {
   id: string
   name: string
-  icon: string
 }
 
 interface KPI {
@@ -13,272 +12,233 @@ interface KPI {
   value: number
   target: number
   unit: string
-  delta: number
-  trend: 'up' | 'down' | 'stable'
 }
 
-interface NetworkStat {
+interface Network {
   name: string
-  icon: string
   views: number
   engagement: number
-  color: string
 }
 
 // Data
 const projects: Project[] = [
-  { id: '1', name: 'Amens', icon: '🏠' },
-  { id: '2', name: 'FlashCert', icon: '🎓' },
-  { id: '3', name: 'AgentCRM', icon: '👥' },
-  { id: '4', name: 'TeamGame', icon: '🎮' },
-  { id: '5', name: 'Digital-DNA', icon: '🧬' },
-  { id: '6', name: 'Fieat', icon: '💰' },
-  { id: '7', name: 'PhoneAutomation', icon: '📱' },
+  { id: '1', name: 'Amens' },
+  { id: '2', name: 'FlashCert' },
+  { id: '3', name: 'AgentCRM' },
+  { id: '4', name: 'TeamGame' },
+  { id: '5', name: 'Digital-DNA' },
+  { id: '6', name: 'Fieat' },
+  { id: '7', name: 'PhoneAutomation' },
 ]
 
 const kpis: KPI[] = [
-  {
-    id: '1',
-    label: 'Vues totales',
-    value: 823,
-    target: 500,
-    unit: 'vues',
-    delta: 64.6,
-    trend: 'up',
-  },
-  {
-    id: '2',
-    label: 'Taux d\'engagement',
-    value: 5.2,
-    target: 5.0,
-    unit: '%',
-    delta: 4.0,
-    trend: 'up',
-  },
-  {
-    id: '3',
-    label: 'Clics par jour',
-    value: 8,
-    target: 10,
-    unit: 'clics',
-    delta: -20.0,
-    trend: 'down',
-  },
-  {
-    id: '4',
-    label: 'Conversions',
-    value: 2,
-    target: 3,
-    unit: 'inscriptions',
-    delta: -33.3,
-    trend: 'down',
-  },
+  { id: '1', label: 'Vues', value: 823, target: 500, unit: '' },
+  { id: '2', label: 'Engagement', value: 5.2, target: 5.0, unit: '%' },
+  { id: '3', label: 'Clics/jour', value: 8, target: 10, unit: '' },
+  { id: '4', label: 'Conversions', value: 2, target: 3, unit: '' },
 ]
 
-const networkStats: NetworkStat[] = [
-  { name: 'TikTok', icon: '📱', views: 356, engagement: 4.8, color: '#FF5733' },
-  { name: 'Instagram', icon: '📷', views: 289, engagement: 5.6, color: '#3B82F6' },
-  { name: 'LinkedIn', icon: '💼', views: 178, engagement: 3.2, color: '#00D26A' },
+const networks: Network[] = [
+  { name: 'TikTok', views: 356, engagement: 4.8 },
+  { name: 'Instagram', views: 289, engagement: 5.6 },
+  { name: 'LinkedIn', views: 178, engagement: 3.2 },
 ]
 
-const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-  { id: 'analytics', label: 'Analytics', icon: '📈' },
-  { id: 'marketing', label: 'Marketing', icon: '📱' },
-  { id: 'users', label: 'Utilisateurs', icon: '👥' },
-  { id: 'revenue', label: 'Revenus', icon: '💰' },
-  { id: 'settings', label: 'Paramètres', icon: '⚙️' },
-]
+// Glyph Components
+function GlyphProgress({ value, max, segments =20 }: { value: number; max: number; segments?: number }) {
+  const percentage = Math.min((value / max) * 100, 100)
+  const filledSegments = Math.floor((percentage / 100) * segments)
+  const partialFill = ((percentage / 100) * segments) % 1
+
+  return (
+    <div className="glyph-progress">
+      {Array.from({ length: segments }).map((_, i) => {
+        let fillClass = ''
+        if (i < filledSegments) {
+          fillClass = 'filled'
+        } else if (i === filledSegments && partialFill > 0) {
+          fillClass = 'partial'
+        }
+        return <div key={i} className={`glyph-segment ${fillClass}`} />
+      })}
+    </div>
+  )
+}
+
+function GlyphDots({ count, active, breathing = false }: { count: number; active: number; breathing?: boolean }) {
+  return (
+    <div className="glyph-grid">
+      {Array.from({ length: count }).map((_, i) => (
+        <div 
+          key={i} 
+          className={`glyph-dot ${i < active ? 'active' : ''} ${breathing && i < active ? 'breathing' : ''}`}
+        />
+      ))}
+    </div>
+  )
+}
+
+function GlyphBar({ percentage }: { percentage: number }) {
+  return (
+    <div className="glyph-bar">
+      <div className="glyph-bar-fill" style={{ width: `${Math.min(percentage, 100)}%` }} />
+    </div>
+  )
+}
 
 function App() {
   const [selectedProject, setSelectedProject] = useState<Project>(projects[0])
-  const [activeMenu, setActiveMenu] = useState('dashboard')
+  const [loaded, setLoaded] = useState(false)
 
-  const getProgress = (current: number, target: number) => {
-    return Math.min(Math.max((current / target) * 100, 0), 100)
+  useEffect(() => {
+    setTimeout(() => setLoaded(true), 100)
+  }, [])
+
+  const getProgress = (value: number, target: number) => {
+    return Math.min((value / target) * 100, 100)
+  }
+
+  const getTotalProgress = () => {
+    const progresses = kpis.map(kpi => getProgress(kpi.value, kpi.target))
+    return progresses.reduce((a, b) => a + b, 0) / progresses.length
   }
 
   return (
-    <div className="min-h-screen bg-rien-black text-rien-white">
-      {/* Desktop Sidebar */}
-      <aside className="desktop-sidebar fixedleft-0 top-0 bottom-0 w-64 bg-rien-dark border-r border-rien-border flex flex-col">
-        {/* Logo */}
-        <div className="p-6 border-b border-rien-border">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rien-accent to-rien-warning flex items-center justify-center text-black font-bold text-sm">
-              D
-            </div>
-            <span className="text-lg font-semibold tracking-tight">Dash</span>
-          </div>
-        </div>
-
-        {/* Project Selector */}
-        <div className="p-4 border-b border-rien-border">
+    <div className="screen">
+      {/* Header */}
+      <header className="header">
+        <div>
+          <div className="text-micro mb-2">Projet</div>
           <select
             value={selectedProject.id}
             onChange={(e) => {
               const project = projects.find(p => p.id === e.target.value)
               if (project) setSelectedProject(project)
             }}
-            className="select-dark w-full"
+            className="select-glyph"
           >
             {projects.map(project => (
               <option key={project.id} value={project.id}>
-                {project.icon} {project.name}
+                {project.name}
               </option>
             ))}
           </select>
         </div>
+        <div className="text-micro">
+          Sprint 1
+        </div>
+      </header>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
-          {menuItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => setActiveMenu(item.id)}
-              className={`btn w-full flex items-center gap-3 ${activeMenu === item.id ? 'btn-active' : ''}`}
+      {/* Main KPIs */}
+      <section>
+        <div className="section-title">Métriques</div>
+        <div className="kpi-grid">
+          {kpis.map((kpi, index) => (
+            <div 
+              key={kpi.id} 
+              className="card-glyph"
+              style={{ opacity: loaded ? 1 : 0, transition: `opacity 0.3s ease ${index *0.1}s` }}
             >
-              <span className="text-base">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
+              <div className="kpi-item">
+                {/* Visual - Glyph Progress */}
+                <div className="kpi-visual">
+                  <GlyphProgress value={kpi.value} max={Math.max(kpi.value, kpi.target)} segments={15} />
+                </div>
+                
+                {/* Data */}
+                <div className="kpi-data">
+                  <div className="text-label mb-1">{kpi.label}</div>
+                  <div className="text-value">
+                    {kpi.value.toLocaleString()}{kpi.unit}
+                  </div>
+                  <div className="text-micro mt-2">
+                    Objectif: {kpi.target}{kpi.unit}
+                  </div>
+                  <div className="mt-3">
+                    <GlyphBar percentage={getProgress(kpi.value, kpi.target)} />
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
-        </nav>
-
-        {/* User */}
-        <div className="p-4 border-t border-rien-border">
-          <div className="flex items-center gap-3 text-sm text-rien-gray">
-            <div className="w-8 h-8 rounded-full bg-rien-elevated flex items-center justify-center">
-              N
-            </div>
-            <span>Nadir DNA</span>
-          </div>
         </div>
-      </aside>
+      </section>
 
-      {/* Main Content */}
-      <main className="md:ml-64 min-h-screen">
-        {/* Header */}
-        <header className="sticky top-0 bg-rien-black/80 backdrop-blur-xl border-b border-rien-border px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight">
-                {selectedProject.icon} {selectedProject.name}
-              </h1>
-              <p className="text-sm text-rien-gray mt-1">
-                Semaine 1•{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button className="btn text-sm">
-                📅 7 jours
-              </button>
-              <button className="btn text-sm">
-                ↻ Actualiser
-              </button>
+      <div className="divider" />
+
+      {/* Overall Progress */}
+      <section>
+        <div className="section-title">Progression globale</div>
+        <div className="card-glyph" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease 0.4s' }}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-micro">Objectifs atteints</div>
+            <div className="text-value" style={{ fontSize: '24px' }}>
+              {Math.round(getTotalProgress())}%
             </div>
           </div>
-        </header>
-
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* KPI Grid */}
-          <section>
-            <div className="grid-metrics">
-              {kpis.map(kpi => (
-                <div key={kpi.id} className="kpi-card">
-                  <div className="flex items-start justify-between mb-4">
-                    <span className="metric-label">{kpi.label}</span>
-                    {kpi.trend === 'up' ? (
-                      <span className="badge-success">
-                        ↑ {kpi.delta.toFixed(1)}%
-                      </span>
-                    ) : kpi.trend === 'down' ? (
-                      <span className="badge-warning">
-                        ↓ {Math.abs(kpi.delta).toFixed(1)}%
-                      </span>
-                    ) : (
-                      <span className="text-rien-gray text-xs">—</span>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-baseline gap-2 mb-4">
-                    <span className="metric-value">{kpi.value.toLocaleString()}</span>
-                    <span className="text-rien-gray text-sm">/ {kpi.target} {kpi.unit}</span>
-                  </div>
-                  
-                  <div className="progress">
-                    <div 
-                      className="progress-fill"
-                      style={{ width: `${getProgress(kpi.value, kpi.target)}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Network Stats */}
-          <section>
-            <h2 className="text-lg font-semibold mb-4 tracking-tight">
-              Réseaux Sociaux
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {networkStats.map(stat => (
-                <div key={stat.name} className="card">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">{stat.icon}</span>
-                      <span className="font-medium">{stat.name}</span>
-                    </div>
-                    <div 
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: stat.color }}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div>
-                      <div className="text-2xl font-bold">{stat.views.toLocaleString()}</div>
-                      <div className="text-xs text-rien-gray">vues</div>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold">{stat.engagement}%</div>
-                      <div className="text-xs text-rien-gray">engagement</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Global Progress */}
-          <section>
-            <div className="card">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold tracking-tight">Progression globale</h2>
-                <span className="text-rien-gray text-sm">67% des objectifs</span>
-              </div>
-              <div className="h-2 bg-rien-surface rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-rien-accent to-rien-warning rounded-full" style={{ width: '67%' }} />
-              </div>
-            </div>
-          </section>
+          <GlyphBar percentage={getTotalProgress()} />
+          <div className="flex justify-center mt-6">
+            <GlyphDots count={20} active={Math.round(getTotalProgress() /5)} breathing />
+          </div>
         </div>
-      </main>
+      </section>
 
-      {/* Mobile Bottom Bar */}
-      <nav className="mobile-bottom-bar fixed bottom-0 left-0 right-0 bg-rien-dark border-t border-rien-border px-2 py-3">
-        {menuItems.slice(0, 5).map(item => (
-          <button
-            key={item.id}
-            onClick={() => setActiveMenu(item.id)}
-            className={`flex-1 flex flex-col items-center gap-1 py-1 ${activeMenu === item.id ? 'text-rien-accent' : 'text-rien-gray'}`}
-          >
-            <span className="text-lg">{item.icon}</span>
-            <span className="text-2xs">{item.label}</span>
-          </button>
-        ))}
-      </nav>
+      <div className="divider" />
+
+      {/* Networks */}
+      <section>
+        <div className="section-title">Réseaux</div>
+        <div className="network-grid">
+          {networks.map((network, index) => (
+            <div 
+              key={network.name}
+              className="card-glyph"
+              style={{ opacity: loaded ? 1 : 0, transition: `opacity 0.3s ease ${0.5 + index * 0.1}s` }}
+            >
+              <div className="text-micro mb-3">{network.name}</div>
+              <div className="flex justify-center mb-4">
+                <GlyphDots count={10} active={Math.min(Math.round(network.views / 50), 10)} />
+              </div>
+              <div className="text-value mb-1" style={{ fontSize: '24px' }}>
+                {network.views}
+              </div>
+              <div className="text-label">vues</div>
+              <div className="mt-2">
+                <GlyphBar percentage={network.engagement * 20} />
+              </div>
+              <div className="text-micro mt-2">{network.engagement}% engagement</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* Status */}
+      <section>
+        <div className="section-title">Statut</div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="status-dot active" />
+            <span className="text-label">En cours</span>
+          </div>
+          <div className="text-micro">
+            Mis à jour maintenant
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ marginTop: 'auto', paddingTop: '48px' }}>
+        <div className="flex justify-center gap-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="status-dot active" style={{ animationDelay: `${i * 0.2}s` }} />
+          ))}
+        </div>
+        <div className="text-micro text-center mt-4">
+          Dash◎
+        </div>
+      </footer>
     </div>
   )
 }
