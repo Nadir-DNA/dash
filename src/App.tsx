@@ -1,35 +1,36 @@
 import { useState, useEffect } from 'react'
 
 // Types
-interface Project {
-  id: string
-  name: string
-}
-
 interface KPI {
   id: string
   label: string
   value: number
   target: number
   unit: string
+  percentage: number
+}
+
+interface ChartData {
+  label: string
+  value: number
 }
 
 // Data
-const projects: Project[] = [
-  { id: '1', name: 'Amens' },
-  { id: '2', name: 'FlashCert' },
-  { id: '3', name: 'AgentCRM' },
-  { id: '4', name: 'TeamGame' },
-  { id: '5', name: 'Digital-DNA' },
-  { id: '6', name: 'Fieat' },
-  { id: '7', name: 'PhoneAutomation' },
+const kpis: KPI[] = [
+  { id: '1', label: 'Vues', value: 823, target: 500, unit: '', percentage: 165 },
+  { id: '2', label: 'Engagement', value: 5.2, target: 5.0, unit: '%', percentage: 104 },
+  { id: '3', label: 'Clics/jour', value: 8, target: 10, unit: '', percentage: 80 },
+  { id: '4', label: 'Conversions', value: 2, target: 3, unit: '', percentage: 67 },
 ]
 
-const kpis: KPI[] = [
-  { id: '1', label: 'Vues', value: 823, target: 500, unit: '' },
-  { id: '2', label: 'Engagement', value: 5.2, target: 5.0, unit: '%' },
-  { id: '3', label: 'Clics', value: 8, target: 10, unit: '' },
-  { id: '4', label: 'Conversions', value: 2, target: 3, unit: '' },
+const chartData: ChartData[] = [
+  { label: 'Lun', value: 120 },
+  { label: 'Mar', value: 180 },
+  { label: 'Mer', value: 150 },
+  { label: 'Jeu', value: 220 },
+  { label: 'Ven', value: 280 },
+  { label: 'Sam', value: 350 },
+  { label: 'Dim', value: 410 },
 ]
 
 const menuItems = [
@@ -40,151 +41,22 @@ const menuItems = [
   { id: 'settings', label: 'Settings' },
 ]
 
-// Glyph Matrix Font - Each digit as 3x5 grid
-const GLYPH_DIGITS: { [key: string]: number[][] } = {
-  '0': [
-    [1,1,1],
-    [1,0,1],
-    [1,0,1],
-    [1,0,1],
-    [1,1,1],
-  ],
-  '1': [
-    [0,1,0],
-    [1,1,0],
-    [0,1,0],
-    [0,1,0],
-    [1,1,1],
-  ],
-  '2': [
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-    [1,0,0],
-    [1,1,1],
-  ],
-  '3': [
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-  ],
-  '4': [
-    [1,0,1],
-    [1,0,1],
-    [1,1,1],
-    [0,0,1],
-    [0,0,1],
-  ],
-  '5': [
-    [1,1,1],
-    [1,0,0],
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-  ],
-  '6': [
-    [1,1,1],
-    [1,0,0],
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-  ],
-  '7': [
-    [1,1,1],
-    [0,0,1],
-    [0,0,1],
-    [0,0,1],
-    [0,0,1],
-  ],
-  '8': [
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-  ],
-  '9': [
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-  ],
-  '.': [
-    [0,0,0],
-    [0,0,0],
-    [0,0,0],
-    [0,0,0],
-    [0,1,0],
-  ],
-  '%': [
-    [1,0,1],
-    [0,0,1],
-    [1,1,1],
-    [1,0,0],
-    [1,0,1],
-  ],
-}
+const projects = [
+  { id: '1', name: 'Amens' },
+  { id: '2', name: 'FlashCert' },
+  { id: '3', name: 'AgentCRM' },
+]
 
-// Menu icon patterns as 3x3 grids
+// Glyph Menu Icons (3x3 grid patterns)
 const MENU_ICONS: { [key: string]: number[][] } = {
-  dashboard: [
-    [1,1,0],
-    [1,0,0],
-    [1,1,1],
-  ],
-  analytics: [
-    [0,1,0],
-    [0,1,0],
-    [1,1,1],
-  ],
-  marketing: [
-    [1,0,1],
-    [0,1,0],
-    [1,0,1],
-  ],
-  users: [
-    [0,1,0],
-    [1,1,1],
-    [1,0,1],
-  ],
-  settings: [
-    [1,0,1],
-    [0,1,0],
-    [1,0,1],
-  ],
+  dashboard: [[1,1,0],[1,0,0],[1,1,1]],
+  analytics: [[0,1,0],[0,1,0],[1,1,1]],
+  marketing: [[1,0,1],[0,1,0],[1,0,1]],
+  users: [[0,1,0],[1,1,1],[1,0,1]],
+  settings: [[1,0,1],[0,1,0],[1,0,1]],
 }
 
 // Components
-function GlyphDigit({ digit, size = 'md' }: { digit: string; size?: 'sm' | 'md' | 'lg' | 'xl' }) {
-  const pattern = GLYPH_DIGITS[digit] || GLYPH_DIGITS['0']
-  const sizeClass = `glyph-digit glyph-digit-${size}`
-  
-  return (
-    <div className={sizeClass}>
-      {pattern.map((row, i) => 
-        row.map((cell, j) => (
-          <div key={`${i}-${j}`} className={`glyph-dot ${cell ? 'on' : ''}`} />
-        ))
-      )}
-    </div>
-  )
-}
-
-function GlyphNumber({ value, size = 'lg' }: { value: number | string; size?: 'sm' | 'md' | 'lg' | 'xl' }) {
-  const digits = String(value).split('')
-  
-  return (
-    <div className="glyph-number">
-      {digits.map((digit, i) => (
-        <GlyphDigit key={i} digit={digit} size={size} />
-      ))}
-    </div>
-  )
-}
-
 function MenuIcon({ pattern }: { pattern: number[][] }) {
   return (
     <div className="menu-icon">
@@ -197,61 +69,135 @@ function MenuIcon({ pattern }: { pattern: number[][] }) {
   )
 }
 
-function GlyphProgressBar({ value, max, segments = 20 }: { value: number; max: number; segments?: number }) {
-  const percentage = Math.min((value / max) * 100, 100)
-  const filledSegments = Math.round((percentage / 100) * segments)
-  
+function GlyphDots({ count, active }: { count: number; active: number }) {
+  const cols = Math.ceil(Math.sqrt(count))
   return (
-    <div className="glyph-progress-bar">
-      {Array.from({ length: segments }).map((_, i) => (
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: '3px' }}>
+      {Array.from({ length: count }).map((_, i) => (
         <div 
           key={i} 
-          className={`glyph-bar-segment ${i < filledSegments ? 'filled' : ''}`}
-          style={{ height: `${20 + Math.random() * 12}px` }}
+          className={`glyph-dot ${i < active ? 'on breathing' : ''}`}
+          style={{ width: '5px', height: '5px', animationDelay: `${i * 0.05}s` }}
         />
       ))}
     </div>
   )
 }
 
-function GlyphGrid({ dots, activeCount }: { dots: number; activeCount: number }) {
-  const cols = Math.ceil(Math.sqrt(dots))
-  
+function CircularProgress({ value, max }: { value: number; max: number }) {
+  const percentage = Math.min((value / max) * 100, 100)
+  const radius = 52
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (percentage / 100) * circumference
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: '2px' }}>
-      {Array.from({ length: dots }).map((_, i) => (
-        <div 
-          key={i} 
-          className={`glyph-grid-dot ${i < activeCount ? 'on' : ''} ${i < activeCount ? 'breathing' : ''}`}
-          style={{ animationDelay: `${i *0.05}s` }}
+    <div className="circle-progress">
+      <svg width="120" height="120" viewBox="0 0 120 120">
+        <defs>
+          <linearGradient id="circleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="1" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.6" />
+          </linearGradient>
+        </defs>
+        <circle
+          className="circle-bg"
+          cx="60"
+          cy="60"
+          r={radius}
+          strokeWidth="4"
         />
-      ))}
+        <circle
+          className="circle-fill"
+          cx="60"
+          cy="60"
+          r={radius}
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          style={{ strokeDashoffset }}
+        />
+      </svg>
+      <div className="circle-center">
+        <div className="circle-value">{value}</div>
+        <div className="circle-label">/ {max}</div>
+      </div>
+    </div>
+  )
+}
+
+function LineChart({ data }: { data: ChartData[] }) {
+  const maxValue = Math.max(...data.map(d => d.value))
+  const height = 160
+  const width = 400
+  const padding = 20
+
+  const points = data.map((d, i) => {
+    const x = padding + (i * (width - padding * 2)) / (data.length - 1)
+    const y = height - padding - ((d.value / maxValue) * (height - padding * 2))
+    return { x, y, value: d.value, label: d.label }
+  })
+
+  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+  const areaD = `${pathD} L ${points[points.length - 1].x} ${height - padding} L ${padding} ${height - padding} Z`
+
+  return (
+    <div className="line-chart">
+      <div className="line-chart-grid">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="grid-line" />
+        ))}
+      </div>
+      <svg viewBox={`0 0 ${width} ${height}`} className="line-chart-svg" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path className="line-chart-area" d={areaD} />
+        <path className="line-chart-line" d={pathD} />
+        {points.map((p, i) => (
+          <circle
+            key={i}
+            className="line-chart-dots"
+            cx={p.x}
+            cy={p.y}
+            r="3"
+          />
+        ))}
+      </svg>
+      <div className="line-chart-labels">
+        {data.map((d, i) => (
+          <div key={i} className="line-chart-label">{d.label}</div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function GaugeBar({ percentage }: { percentage: number }) {
+  return (
+    <div className="gauge-chart">
+      <div className="gauge-fill" style={{ width: `${Math.min(percentage, 100)}%` }} />
     </div>
   )
 }
 
 function App() {
-  const [selectedProject, setSelectedProject] = useState<Project>(projects[0])
   const [activeMenu, setActiveMenu] = useState('dashboard')
+  const [selectedProject, setSelectedProject] = useState(projects[0])
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     setTimeout(() => setLoaded(true), 100)
   }, [])
 
-  const getProgress = (value: number, target: number) => {
-    return Math.min((value / target) * 100, 100)
-  }
-
-  const getTotalProgress = () => {
-    const progresses = kpis.map(kpi => getProgress(kpi.value, kpi.target))
-    return progresses.reduce((a, b) => a + b, 0) / progresses.length
-  }
+  const totalProgress = kpis.reduce((acc, kpi) => acc + kpi.percentage, 0) / kpis.length
 
   return (
-    <div className="app-container">
-      {/* Menu Sidebar */}
-      <nav className="menu-sidebar">
+    <div className="dashboard">
+      {/* Menu */}
+      <nav className="menu">
         {menuItems.map(item => (
           <div
             key={item.id}
@@ -265,106 +211,105 @@ function App() {
       </nav>
 
       {/* Main Content */}
-      <main className="main-content">
+      <main className="main">
         {/* Header */}
-        <header className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              {/* Glyph logo */}
-              <div className="flex gap-1">
-                {[1,0,1,1,1].map((d, i) => (
-                  <div key={i} className={`glyph-grid-dot ${d ? 'on breathing' : ''}`} style={{ width: '8px', height: '8px' }} />
-                ))}
-              </div>
-              <div className="section-title">DASH</div>
-            </div>
-            <select
-              value={selectedProject.id}
-              onChange={(e) => {
-                const project = projects.find(p => p.id === e.target.value)
-                if (project) setSelectedProject(project)
-              }}
-              className="glyph-selector"
-            >
-              {projects.map(project => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
+        <header className="header">
+          <div className="header-left">
+            <div className="flex gap-1">
+              {[1,0,1,1,1].map((d, i) => (
+                <div 
+                  key={i} 
+                  className={`glyph-dot ${d ? 'on breathing' : ''}`}
+                  style={{ width: '6px', height: '6px', animationDelay: `${i * 0.1}s` }}
+                />
               ))}
-            </select>
+            </div>
+            <span className="header-title">DASHBOARD</span>
           </div>
-          
-          {/* Project name as Glyph */}
-          <div style={{ 
-            fontSize: '10px',
-            letterSpacing: '0.1em',
-            color: '#666666',
-            textTransform: 'uppercase',
-          }}>
-            {activeMenu.toUpperCase()}
-          </div>
+          <select
+            value={selectedProject.id}
+            onChange={(e) => {
+              const project = projects.find(p => p.id === e.target.value)
+              if (project) setSelectedProject(project)
+            }}
+            className="project-selector"
+          >
+            {projects.map(project => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
         </header>
 
-        {/* KPIs */}
-        <section style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease' }}>
-          <div className="section-header">
-            <div className="section-dots">
-              {[0,1,2].map(i => (
-                <div key={i} className="section-dot" style={{ background: '#FFFFFF' }} />
-              ))}
-            </div>
-            <span className="section-title">Métriques</span>
-          </div>
-
-          <div className="glyph-card">
+        {/* KPIs with Circular Progress */}
+        <section className="section">
+          <div className="kpi-grid">
             {kpis.map((kpi, index) => (
-              <div key={kpi.id} className="flex gap-8 mb-8 last:mb-0" style={{ opacity: loaded ? 1 : 0, transition: `opacity 0.3s ease ${index * 0.1}s` }}>
-                {/* Glyph visualization */}
-                <div className="flex-shrink-0">
-                  <GlyphGrid dots={30} activeCount={Math.round(getProgress(kpi.value, kpi.target) / 100 * 30)} />
+              <div 
+                key={kpi.id} 
+                className="kpi-card"
+                style={{ opacity: loaded ? 1 : 0, transition: `opacity 0.3s ease ${index * 0.1}s` }}
+              >
+                <div className="kpi-label">{kpi.label}</div>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <CircularProgress value={kpi.value} max={Math.max(kpi.value, kpi.target)} />
                 </div>
-                
-                {/* Value */}
-                <div className="flex-1">
-                  <div className="mb-2" style={{ fontSize: '10px', letterSpacing: '0.05em', color: '#666666', textTransform: 'uppercase' }}>
-                    {kpi.label}
-                  </div>
-                  <div className="kpi-value">
-                    <GlyphNumber value={kpi.value} size="lg" />
-                    {kpi.unit && <span className="kpi-unit">{kpi.unit}</span>}
-                  </div>
-                  <div className="kpi-target mt-2">
-                    Objectif: {kpi.target}{kpi.unit}
-                  </div>
-                  <div className="mt-4">
-                    <GlyphProgressBar value={kpi.value} max={Math.max(kpi.value, kpi.target)} />
-                  </div>
-                </div>
+                <div className="kpi-target">Objectif: {kpi.target}{kpi.unit}</div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Overall Progress */}
-        <section className="mt-8" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease 0.3s' }}>
-          <div className="section-header">
-            <div className="section-dots">
-              {[0,1].map(i => (
-                <div key={i} className="section-dot" style={{ background: '#FFFFFF' }} />
-              ))}
-            </div>
-            <span className="section-title">Progression</span>
-          </div>
-
-          <div className="glyph-card">
-            <div className="flex items-center justify-between mb-4">
-              <div style={{ fontSize: '10px', color: '#666666', letterSpacing: '0.05em' }}>
-                OBJECTIFS ATTEINTS
+        {/* Charts */}
+        <section className="section">
+          <div className="charts-grid">
+            {/* Line Chart */}
+            <div 
+              className="chart-card"
+              style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease 0.4s' }}
+            >
+              <div className="chart-header">
+                <div className="chart-title">Évolution hebdomadaire</div>
+                <div className="chart-value">+64%</div>
               </div>
-              <GlyphNumber value={Math.round(getTotalProgress())} size="md" />
-              <span style={{ fontSize: '16px', color: '#666666' }}>%</span>
+              <LineChart data={chartData} />
             </div>
-            <GlyphProgressBar value={getTotalProgress()} max={100} segments={30} />
+
+            {/* Total Progress */}
+            <div 
+              className="chart-card"
+              style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease 0.5s' }}
+            >
+              <div className="chart-header">
+                <div className="chart-title">Progression globale</div>
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '48px', fontWeight: 200, marginBottom: '8px' }}>
+                      {Math.round(totalProgress)}%
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+                      <GlyphDots count={25} active={Math.round(totalProgress /4)} />
+                    </div>
+                  </div>
+                </div>
+                {kpis.map(kpi => (
+                  <div key={kpi.id}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#666666' }}>
+                        {kpi.label}
+                      </span>
+                      <span style={{ fontSize: '10px', color: '#666666' }}>
+                        {kpi.percentage}%
+                      </span>
+                    </div>
+                    <GaugeBar percentage={kpi.percentage} />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       </main>

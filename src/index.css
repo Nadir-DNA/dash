@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Nothing Glyph Interface - Complete */
+/* Nothing Glyph Interface - Full Screen Dashboard */
 @theme {
   --color-nothing: #000000;
   --color-glyph-on: #FFFFFF;
@@ -14,48 +14,28 @@
   padding: 0;
 }
 
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
 body {
   background: #000000;
   color: #FFFFFF;
-  font-family: 'Inter', monospace;
-  min-height: 100vh;
+  font-family: 'Inter', -apple-system, sans-serif;
 }
 
-/* === GLYPH MATRIX FONT === */
-/* Chaque caractère est une grille 5x7 de points */
-.glyph-char {
-  display: inline-grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(7, 1fr);
-  gap: 1px;
-  width: 30px;
-  height: 42px;
-}
-
-.glyph-char-sm {
-  width: 20px;
-  height: 28px;
-}
-
-.glyph-char-lg {
-  width: 36px;
-  height: 50px;
-}
-
-.glyph-char-xl {
-  width: 48px;
-  height: 67px;
-}
-
+/* === GLYPH DOTS === */
 .glyph-dot {
   background: #1A1A1A;
   border-radius: 50%;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .glyph-dot.on {
   background: #FFFFFF;
-  box-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
 }
 
 .glyph-dot.breathing {
@@ -63,68 +43,44 @@ body {
 }
 
 @keyframes breathe {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
 }
 
-/* Glyph Text Line */
-.glyph-text {
-  display: flex;
-  gap: 4px;
+/* === LAYOUT FULL SCREEN === */
+.dashboard {
+  height: 100vh;
+  width: 100vw;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  grid-template-rows: 1fr;
+  background: #000000;
 }
 
-.glyph-text-sm {
-  gap: 2px;
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 64px;
+  }
 }
 
-.glyph-text-spaced {
-  gap: 8px;
-}
-
-/* === GLYPH NUMBERS === */
-.glyph-number {
-  display: inline-flex;
-  gap: 2px;
-}
-
-.glyph-digit {
-  display: inline-grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-  gap: 1px;
-  width: 12px;
-  height: 20px;
-}
-
-.glyph-digit-lg {
-  width: 18px;
-  height: 30px;
-}
-
-.glyph-digit-xl {
-  width: 24px;
-  height: 40px;
-}
-
-/* === LAYOUT === */
-.app-container {
-  display: flex;
-  min-height: 100vh;
-}
-
-/* Menu */
-.menu-sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 64px;
+/* === MENU === */
+.menu {
   background: #000000;
   border-right: 1px solid #1A1A1A;
   display: flex;
   flex-direction: column;
   padding: 16px 0;
-  z-index: 100;
+}
+
+@media (max-width: 768px) {
+  .menu {
+    grid-row: 2;
+    border-right: none;
+    border-top: 1px solid #1A1A1A;
+    flex-direction: row;
+    padding: 0;
+  }
 }
 
 .menu-item {
@@ -133,8 +89,18 @@ body {
   align-items: center;
   padding: 12px 0;
   cursor: pointer;
-  transition: all 0.2s ease;
   border-left: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .menu-item {
+    flex: 1;
+    flex-direction: column;
+    padding: 8px 0;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+  }
 }
 
 .menu-item:hover {
@@ -146,21 +112,28 @@ body {
   background: #0A0A0A;
 }
 
+@media (max-width: 768px) {
+  .menu-item.active {
+    border-left-color: transparent;
+    border-bottom-color: #FFFFFF;
+  }
+}
+
 .menu-icon {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 2px;
+  gap: 1px;
   width: 18px;
   height: 18px;
   margin-bottom: 4px;
 }
 
 .menu-icon-dot {
-  background: #333333;
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
+  background: #333333;
 }
 
 .menu-item.active .menu-icon-dot,
@@ -180,129 +153,232 @@ body {
   color: #666666;
 }
 
-/* Main Content */
-.main-content {
-  margin-left: 64px;
-  padding: 32px;
-  max-width: 1200px;
-  width: 100%;
+/* ===MAIN CONTENT === */
+.main {
+  overflow: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
 }
 
-@media (max-width: 768px) {
-  .menu-sidebar {
-    bottom: 0;
-    top: auto;
-    left: 0;
-    right: 0;
-    width: 100%;
-    height: 64px;
-    flex-direction: row;
-    border-right: none;
-    border-top: 1px solid #1A1A1A;
-    padding: 0;
-  }
-  
-  .menu-item {
-    flex: 1;
-    flex-direction: column;
-    padding: 8px 0;
-    border-left: none;
-    border-bottom: 2px solid transparent;
-  }
-  
-  .menu-item.active {
-    border-bottom-color: #FFFFFF;
-    border-left-color: transparent;
-  }
-  
-  .main-content {
-    margin-left: 0;
-    margin-bottom: 64px;
-    padding: 16px;
+@media (min-width: 769px) {
+  .main {
+    padding: 32px 48px;
   }
 }
 
-/* === CARDS === */
-.glyph-card {
+/* === HEADER === */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-title {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #666666;
+}
+
+.project-selector {
+  background: transparent;
+  border: 1px solid #1A1A1A;
+  color: #FFFFFF;
+  padding: 8px 28px 8px 12px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  appearance: none;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+/* === KPI GRID === */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 1024px) {
+  .kpi-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.kpi-card {
   background: transparent;
   border: 1px solid #1A1A1A;
   padding: 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+}
+
+.kpi-label {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #666666;
   margin-bottom: 16px;
 }
 
-.glyph-card:hover {
-  border-color: #333333;
-}
-
-/* === GLYPH VISUAL ELEMENTS === */
-.glyph-progress-bar {
+.kpi-value-row {
   display: flex;
-  gap: 1px;
-  height: 32px;
-  align-items: flex-end;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 8px;
 }
 
-.glyph-bar-segment {
-  width: 4px;
-  background: #1A1A1A;
-  border-radius: 1px;
-  transition: all 0.2s ease;
+.kpi-value {
+  font-size: 36px;
+  font-weight: 200;
+  letter-spacing: -0.02em;
 }
 
-.glyph-bar-segment.filled {
-  background: #FFFFFF;
-  box-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+.kpi-unit {
+  font-size: 14px;
+  color: #666666;
 }
 
-.glyph-circle-progress {
-  width: 80px;
-  height: 80px;
+.kpi-target {
+  font-size: 11px;
+  color: #444444;
+}
+
+/* === CIRCULAR PROGRESS === */
+.circle-progress {
   position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
 }
 
-.glyph-circle-progress svg {
+.circle-progress svg {
   transform: rotate(-90deg);
 }
 
-.glyph-circle-bg {
+.circle-bg {
   stroke: #1A1A1A;
+  fill: none;
 }
 
-.glyph-circle-fill {
+.circle-fill {
   stroke: #FFFFFF;
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
+  fill: none;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+  transition: stroke-dashoffset 1s ease;
 }
 
-/* === GLYPH GRID === */
-.glyph-grid-small {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 2px;
+.circle-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
 }
 
-.glyph-grid-large {
-  display: grid;
-  grid-template-columns: repeat(20, 1fr);
-  gap: 2px;
+.circle-value {
+  font-size: 28px;
+  font-weight: 200;
+  letter-spacing: -0.02em;
 }
 
-.glyph-grid-dot {
-  width: 4px;
-  height: 4px;
+.circle-label {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: #666666;
+  text-transform: uppercase;
+}
+
+/* === LINE CHART === */
+.line-chart {
+  height: 200px;
+  position: relative;
+  margin: 16px 0;
+}
+
+.line-chart-grid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.grid-line {
+  border-top: 1px solid #1A1A1A;
+  height: 0;
+}
+
+.line-chart-svg {
+  position: absolute;
+  inset: 0;
+}
+
+.line-chart-line {
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+}
+
+.line-chart-area {
+  fill: url(#lineGradient);
+  opacity: 0.1;
+}
+
+.line-chart-dots {
+  fill: #FFFFFF;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+.line-chart-labels {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.line-chart-label {
+  font-size: 9px;
+  color: #444444;
+  letter-spacing: 0.03em;
+}
+
+/* === AREA CHART GAUGE === */
+.gauge-chart {
+  position: relative;
+  width: 100%;
+  height: 8px;
   background: #1A1A1A;
-  border-radius: 50%;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
-.glyph-grid-dot.on {
+.gauge-fill {
+  height: 100%;
   background: #FFFFFF;
-  box-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  transition: width 1s ease;
 }
 
-.glyph-grid-dot.breathing {
-  animation: breathe 2s ease-in-out infinite;
+/* === SECTION === */
+.section {
+  margin-bottom: 32px;
 }
 
-/* === SECTION HEADER === */
 .section-header {
   display: flex;
   align-items: center;
@@ -318,8 +394,12 @@ body {
 .section-dot {
   width: 4px;
   height: 4px;
+  border-radius: 50%;
   background: #333333;
-  border-radius: 1px;
+}
+
+.section-dot.active {
+  background: #FFFFFF;
 }
 
 .section-title {
@@ -329,48 +409,40 @@ body {
   color: #666666;
 }
 
-/* === KPI DISPLAY === */
-.kpi-value {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
+/* === CHARTS GRID === */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
 }
 
-.kpi-number {
-  font-size: 48px;
-  font-weight: 200;
-  letter-spacing: -0.02em;
-  color: #FFFFFF;
+@media (min-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: 2fr 1fr;
+  }
 }
 
-.kpi-unit {
-  font-size: 16px;
-  color: #666666;
-}
-
-.kpi-target {
-  font-size: 12px;
-  color: #444444;
-}
-
-/* === SELECTOR === */
-.glyph-selector {
+.chart-card {
   background: transparent;
   border: 1px solid #1A1A1A;
-  color: #666666;
-  padding: 8px 24px 8px 12px;
-  font-size: 10px;
+  padding: 24px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.chart-title {
+  font-size: 11px;
   letter-spacing: 0.05em;
-  appearance: none;
-  cursor: pointer;
+  text-transform: uppercase;
+  color: #666666;
 }
 
-.glyph-selector:hover {
-  border-color: #333333;
-  color: #FFFFFF;
-}
-
-.glyph-selector option {
-  background: #000000;
-  color: #FFFFFF;
+.chart-value {
+  font-size: 24px;
+  font-weight: 200;
 }
