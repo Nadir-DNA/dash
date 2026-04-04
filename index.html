@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/dash/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0A0A0A" />
+    <meta name="description" content="Dashboard multi-projets pour suivre les KPIs et objectifs" />
+    <title>Dash ◎ KPI Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- SPA Routing for GitHub Pages -->
+    <script>
+      // Single Page Apps for GitHub Pages
+      // https://github.com/rafgraph/spa-github-pages
+      // This script takes the current url and converts the path query string
+      // into the correct url format for the SPA to work
+      var pathSegmentsToKeep = 1; // Keep /dash
+      var l = window.location;
+      if (l.search.includes('?/')) {
+        l.replace(
+          l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+          l.pathname.slice(0, pathSegmentsToKeep) +
+          l.search.replace(/^\/?(.*)/, '$1').replace(/~and~/g, '&') +
+          l.hash
+        );
+      }
+    </script>
+    <script type="module" crossorigin src="/dash/assets/index-B78Uk12R.js"></script>
+    <link rel="stylesheet" crossorigin href="/dash/assets/index-BuFWlxQs.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
