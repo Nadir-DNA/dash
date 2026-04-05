@@ -1,50 +1,6 @@
 import { useState, useEffect } from 'react'
-
-// Types
-interface KPI {
-  id: string
-  label: string
-  value: number
-  target: number
-  unit: string
-}
-
-interface ChartData {
-  label: string
-  value: number
-}
-
-// Data
-const kpis: KPI[] = [
-  { id: '1', label: 'Vues', value: 823, target: 500, unit: '' },
-  { id: '2', label: 'Engagement', value: 5.2, target: 5.0, unit: '%' },
-  { id: '3', label: 'Clics', value: 8, target: 10, unit: '' },
-  { id: '4', label: 'Conversions', value: 2, target: 3, unit: '' },
-]
-
-const chartData: ChartData[] = [
-  { label: 'L', value: 120 },
-  { label: 'M', value: 180 },
-  { label: 'M', value: 150 },
-  { label: 'J', value: 220 },
-  { label: 'V', value: 280 },
-  { label: 'S', value: 350 },
-  { label: 'D', value: 410 },
-]
-
-const menuItems = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'analytics', label: 'Analytics' },
-  { id: 'marketing', label: 'Marketing' },
-  { id: 'users', label: 'Users' },
-  { id: 'settings', label: 'Settings' },
-]
-
-const projects = [
-  { id: '1', name: 'Amens' },
-  { id: '2', name: 'FlashCert' },
-  { id: '3', name: 'AgentCRM' },
-]
+import { useMetrics } from './hooks/useMetrics'
+import { DEFAULT_PROJECTS } from './types/metrics'
 
 // Glyph Matrix Font - Each digit as 3x5 grid
 const DIGIT_PATTERNS: { [key: string]: number[][] } = {
@@ -61,6 +17,9 @@ const DIGIT_PATTERNS: { [key: string]: number[][] } = {
   '.': [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,1,0]],
   '%': [[1,0,1],[0,0,1],[0,1,0],[1,0,0],[1,0,1]],
   '/': [[0,0,1],[0,0,1],[0,1,0],[1,0,0],[1,0,0]],
+  ',': [[0,0,0],[0,0,0],[0,0,0],[0,1,0],[1,0,0]],
+  '€': [[0,0,1],[0,1,1],[1,0,0],[0,1,1],[0,0,1]],
+  'K': [[1,0,1],[1,1,0],[1,0,0],[1,1,0],[1,0,1]],
 }
 
 const MENU_ICONS: { [key: string]: number[][] } = {
@@ -70,6 +29,14 @@ const MENU_ICONS: { [key: string]: number[][] } = {
   users: [[0,1,0],[1,1,1],[1,0,1]],
   settings: [[1,0,1],[0,1,0],[1,0,1]],
 }
+
+const menuItems = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'analytics', label: 'Analytics' },
+  { id: 'marketing', label: 'Marketing' },
+  { id: 'users', label: 'Users' },
+  { id: 'settings', label: 'Settings' },
+]
 
 // Components
 function GlyphDigit({ digit, size = 'md' }: { digit: string; size?: 'sm' | 'md' | 'lg' | 'xl' }) {
@@ -88,7 +55,8 @@ function GlyphDigit({ digit, size = 'md' }: { digit: string; size?: 'sm' | 'md' 
 }
 
 function GlyphNumber({ value, size = 'lg' }: { value: number | string; size?: 'sm' | 'md' | 'lg' | 'xl' }) {
-  const digits = String(value).split('')
+  const formatted = typeof value === 'number' ? value.toLocaleString('fr-FR') : String(value)
+  const digits = formatted.split('')
   return (
     <div className="glyph-number">
       {digits.map((d, i) => (
@@ -98,15 +66,15 @@ function GlyphNumber({ value, size = 'lg' }: { value: number | string; size?: 's
   )
 }
 
-function GlyphCircle({ percentage, size = 160 }: { percentage: number; size?: number }) {
-  const dots = 24
+function GlyphCircle({ percentage, size = 140 }: { percentage: number; size?: number }) {
+  const dots =24
   const activeDots = Math.round((percentage / 100) * dots)
   const radius = size / 2 - 15
   
   return (
     <div className="glyph-circle" style={{ width: size, height: size }}>
       {Array.from({ length: dots }).map((_, i) => {
-        const angle = (i / dots) * 2 * Math.PI - Math.PI / 2
+        const angle = (i / dots) * 2 * Math.PI - Math.PI /2
         const x = size / 2 + radius * Math.cos(angle)
         const y = size / 2 + radius * Math.sin(angle)
         return (
@@ -125,7 +93,7 @@ function GlyphCircle({ percentage, size = 160 }: { percentage: number; size?: nu
         )
       })}
       <div className="glyph-circle-center">
-        <GlyphNumber value={Math.round(percentage)} size="md" />
+        <GlyphNumber value={Math.round(percentage)} size="sm" />
       </div>
     </div>
   )
@@ -142,7 +110,7 @@ function GlyphGauge({ percentage, segments = 30 }: { percentage: number; segment
   )
 }
 
-function GlyphLineChart({ data }: { data: ChartData[] }) {
+function GlyphLineChart({ data }: { data: { label: string; value: number }[] }) {
   const rows = 10
   const cols = data.length
   const maxVal = Math.max(...data.map(d => d.value))
@@ -178,8 +146,7 @@ function GlyphGrid({ count, active }: { count: number; active: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div 
           key={i} 
-          className={`glyph-grid-dot ${i < active ? 'on' : ''}`}
-          style={{ animation: i < active ? `breathe 2s ease-in-out ${i * 0.02}s infinite` : 'none' }}
+          className={`glyph-grid-dot ${i < active ? 'on' : ''}`}style={{ animation: i < active ? `breathe 2s ease-in-out ${i * 0.02}s infinite` : 'none' }}
         />
       ))}
     </div>
@@ -198,17 +165,47 @@ function MenuIcon({ pattern }: { pattern: number[][] }) {
   )
 }
 
+function MetricCard({ 
+  label, 
+  value, 
+  unit, 
+  percentage 
+}: { 
+  label: string
+  value: number
+  unit: string
+  percentage: number 
+}) {
+  return (
+    <div className="card">
+      <div className="card-header">
+        <span className="card-title">{label}</span>
+      </div>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <GlyphCircle percentage={percentage} size={120} />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+        <GlyphNumber value={value} size="md" />
+        <span className="text-label">{unit}</span>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const [activeMenu, setActiveMenu] = useState('dashboard')
-  const [selectedProject, setSelectedProject] = useState(projects[0])
+  const [selectedProject, setSelectedProject] = useState(DEFAULT_PROJECTS[0])
   const [loaded, setLoaded] = useState(false)
+  
+  const { metrics, visitsData, getMetricCards, getRevenueCards, getEngagementCards } = useMetrics(selectedProject.id)
 
   useEffect(() => {
     setTimeout(() => setLoaded(true), 100)
   }, [])
 
-  const getPercentage = (value: number, target: number) => Math.round((value / target) * 100)
-  const totalProgress = kpis.reduce((acc, kpi) => acc + getPercentage(kpi.value, kpi.target), 0) / kpis.length
+  const metricCards = getMetricCards()
+  const revenueCards = getRevenueCards()
+  const engagementCards = getEngagementCards()
 
   return (
     <div className="dashboard">
@@ -237,83 +234,92 @@ function App() {
           <select
             value={selectedProject.id}
             onChange={(e) => {
-              const project = projects.find(p => p.id === e.target.value)
+              const project = DEFAULT_PROJECTS.find(p => p.id === e.target.value)
               if (project) setSelectedProject(project)
             }}
             className="selector"
           >
-            {projects.map(project => (
-              <option key={project.id} value={project.id}>{project.name}</option>
+            {DEFAULT_PROJECTS.map(project => (
+              <option key={project.id} value={project.id}>
+                {project.icon} {project.name}
+              </option>
             ))}
           </select>
         </header>
 
-        {/* KPIs - Circular Progress */}
-        <div className="kpi-grid">
-          {kpis.map((kpi, index) => (
-            <div 
-              key={kpi.id} 
-              className="card"
-              style={{ opacity: loaded ? 1 : 0, transition: `opacity 0.3s ease ${index * 0.1}s` }}
-            >
+        {/* Main KPIs */}
+        <section style={{ marginBottom: '32px' }}>
+          <div className="kpi-grid">
+            {metricCards.map((card, index) => (
+              <div 
+                key={card.id} 
+                style={{ opacity: loaded ? 1 : 0, transition: `opacity 0.3s ease ${index * 0.1}s` }}
+              >
+                <MetricCard 
+                  label={card.label}
+                  value={card.value}
+                  unit={card.unit}
+                  percentage={card.changePercent || 50}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Revenue & Engagement */}
+        <section style={{ marginBottom: '32px' }}>
+          <div className="charts-grid">
+            {/* Revenue */}
+            <div className="card" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease 0.4s' }}>
               <div className="card-header">
-                <span className="card-title">{kpi.label}</span>
+                <span className="card-title">Revenus</span>
               </div>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <GlyphCircle percentage={getPercentage(kpi.value, kpi.target)} size={140} />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-                <GlyphNumber value={kpi.value} size="md" />
-                <span className="text-label">/ {kpi.target}{kpi.unit}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Charts */}
-        <div className="charts-grid">
-          {/* Line Chart */}
-          <div className="card" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease 0.4s' }}>
-            <div className="card-header">
-              <span className="card-title">Évolution</span>
-              <span className="text-label">+64%</span>
-            </div>
-            <GlyphLineChart data={chartData} />
-            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '12px' }}>
-              {chartData.map((d, i) => (
-                <span key={i} className="text-micro">{d.label}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div className="card" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease 0.5s' }}>
-            <div className="card-header">
-              <span className="card-title">Progression</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', flex: 1 }}>
-              <GlyphCircle percentage={totalProgress} size={120} />
-              <div style={{ textAlign: 'center' }}>
-                <GlyphNumber value={Math.round(totalProgress)} size="lg" />
-                <span className="text-label">%</span>
-              </div>
-              <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                <GlyphGrid count={50} active={Math.round(totalProgress / 2)} />
-              </div>
-            </div>
-            <div style={{ marginTop: '24px' }}>
-              {kpis.map(kpi => (
-                <div key={kpi.id} style={{ marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span className="text-micro">{kpi.label}</span>
-                    <span className="text-label">{getPercentage(kpi.value, kpi.target)}%</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginTop: '16px' }}>
+                {revenueCards.map(card => (
+                  <div key={card.id} style={{ textAlign: 'center' }}>
+                    <div style={{ marginBottom: '8px' }}>
+                      <GlyphNumber value={card.value} size="sm" />
+                      <span style={{ fontSize: '10px', color: '#666666', marginLeft: '4px' }}>{card.unit}</span>
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <GlyphGauge percentage={Math.abs(card.changePercent || 0)} segments={20} />
+                    </div>
+                    <span style={{ fontSize: '10px', color: '#666666' }}>{card.label}</span>
                   </div>
-                  <GlyphGauge percentage={getPercentage(kpi.value, kpi.target)} segments={40} />
-                </div>
-              ))}
+                ))}
+              </div>
+              <div style={{ marginTop: '24px' }}>
+                <GlyphLineChart data={visitsData.map(d => ({ label: d.date.slice(5), value: d.value }))} />
+              </div>
+            </div>
+
+            {/* Engagement */}
+            <div className="card" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease 0.5s' }}>
+              <div className="card-header">
+                <span className="card-title">Engagement</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
+                {engagementCards.map(card => (
+                  <div key={card.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', color: '#666666', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                      {card.label}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <GlyphGauge percentage={card.trend === 'up' ? Math.abs(card.changePercent || 0) : 100 - (card.changePercent || 0)} segments={15} />
+                      <GlyphNumber value={card.value} size="sm" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
+                <GlyphGrid count={40} active={metrics ? Math.round((metrics.dau / metrics.mau) * 40) : 20} />
+              </div>
+              <div style={{ textAlign: 'center', marginTop: '12px' }}>
+                <span style={{ fontSize: '10px', color: '#666666' }}>DAU / MAU</span>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
       </main>
     </div>
   )
