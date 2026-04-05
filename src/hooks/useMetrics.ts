@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react'
+import { createClient } from '@supabase/supabase-js'
 import type { ProjectMetrics, MetricCard, TimeSeriesData } from '../types/metrics'
 import { generateTimeSeriesData, DEFAULT_PROJECTS } from '../types/metrics'
 
-// Supabase configuration (to be filled with real credentials)
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || ''
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null
 
 export function useMetrics(projectId: string = 'amens') {
   const [metrics, setMetrics] = useState<ProjectMetrics | null>(null)
@@ -14,21 +18,90 @@ export function useMetrics(projectId: string = 'amens') {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // For now, use mock data
-    // TODO: Replace with Supabase queries when credentials are provided
-    const project = DEFAULT_PROJECTS.find(p => p.id === projectId)
-    
-    if (project) {
-      setMetrics(project)
-      setVisitsData(generateTimeSeriesData(7, Math.round(project.visits / 7)))
-      setSignupsData(generateTimeSeriesData(7, Math.round(project.signups / 7)))
-      setRevenueData(generateTimeSeriesData(7, project.mrr ? Math.round(project.mrr / 30) : 0))
+    async function fetchMetrics() {
+      if (!supabase) {
+        // Fallback to mock data
+        const project = DEFAULT_PROJECTS.find(p => p.id === projectId)
+        if (project) {
+          setMetrics(project)
+          setVisitsData(generateTimeSeriesData(7, Math.round(project.visits / 7)))
+          setSignupsData(generateTimeSeriesData(7, Math.round(project.signups / 7)))
+          setRevenueData(generateTimeSeriesData(7, project.mrr ? Math.round(project.mrr / 30) : 0))
+        }
+        setLoading(false)
+        return
+      }
+
+      try {
+        // Try to fetch from Supabase
+        // Table: dash_metrics
+        const { data, error } = await supabase
+          .from('dash_metrics')
+          .select('*')
+          .eq('project_id', projectId)
+          .order('date', { ascending: false })
+          .limit(30)
+
+        if (error) {
+          console.log('Supabase error, using mock data:', error.message)
+          const project = DEFAULT_PROJECTS.find(p => p.id === projectId)
+          if (project) {
+            setMetrics(project)
+            setVisitsData(generateTimeSeriesData(7, Math.round(project.visits / 7)))
+            setSignupsData(generateTimeSeriesData(7, Math.round(project.signups / 7)))
+            setRevenueData(generateTimeSeriesData(7, project.mrr ? Math.round(project.mrr / 30) : 0))
+          }
+        } else if (data && data.length > 0) {
+          // Process real data
+          const latest = data[0]
+          const project = DEFAULT_PROJECTS.find(p => p.id === projectId) || DEFAULT_PROJECTS[0]
+          
+          setMetrics({
+            ...project,
+            visits: latest.visits || project.visits,
+            pageViews: latest.page_views || project.pageViews,
+            uniqueVisitors: latest.unique_visitors || project.uniqueVisitors,
+            conversionRate: latest.conversion_rate || project.conversionRate,
+            signups: latest.signups || project.signups,
+            subscribers: latest.subscribers || project.subscribers,
+            dau: latest.dau || project.dau,
+            mau: latest.mau || project.mau,
+            mrr: latest.mrr || project.mrr,
+          })
+          
+          // Time series
+          setVisitsData(data.slice(0, 7).reverse().map(d => ({
+            date: d.date,
+            value: d.visits || 0,
+          })))
+          
+          setSignupsData(data.slice(0, 7).reverse().map(d => ({
+            date: d.date,
+            value: d.signups || 0,
+          })))
+          
+          setRevenueData(data.slice(0, 7).reverse().map(d => ({
+            date: d.date,
+            value: d.mrr ? Math.round(d.mrr / 30) : 0,
+          })))
+        }
+      } catch (err) {
+        console.error('Failed to fetch metrics:', err)
+        const project = DEFAULT_PROJECTS.find(p => p.id === projectId)
+        if (project) {
+          setMetrics(project)
+          setVisitsData(generateTimeSeriesData(7, Math.round(project.visits / 7)))
+          setSignupsData(generateTimeSeriesData(7, Math.round(project.signups / 7)))
+          setRevenueData(generateTimeSeriesData(7, project.mrr ? Math.round(project.mrr / 30) : 0))
+        }
+      }
+      
+      setLoading(false)
     }
-    
-    setLoading(false)
+
+    fetchMetrics()
   }, [projectId])
 
-  // Generate metric cards for dashboard
   const getMetricCards = (): MetricCard[] => {
     if (!metrics) return []
     
@@ -44,7 +117,7 @@ export function useMetrics(projectId: string = 'amens') {
       },
       {
         id: 'conversion',
-        label: 'Taux de conversion',
+        label: 'Conversion',
         value: metrics.conversionRate,
         previousValue: metrics.conversionRate - 0.5,
         unit: '%',
@@ -72,7 +145,6 @@ export function useMetrics(projectId: string = 'amens') {
     ]
   }
 
-  // Revenue metrics (for SaaS)
   const getRevenueCards = (): MetricCard[] => {
     if (!metrics || !metrics.mrr) return []
     
@@ -106,7 +178,7 @@ export function useMetrics(projectId: string = 'amens') {
       },
       {
         id: 'churn',
-        label: 'Churn Rate',
+        label: 'Churn',
         value: metrics.churnRate!,
         previousValue: metrics.churnRate! + 0.5,
         unit: '%',
@@ -116,7 +188,6 @@ export function useMetrics(projectId: string = 'amens') {
     ]
   }
 
-  // Engagement metrics
   const getEngagementCards = (): MetricCard[] => {
     if (!metrics) return []
     
@@ -169,21 +240,6 @@ export function useMetrics(projectId: string = 'amens') {
     getRevenueCards,
     getEngagementCards,
     loading,
-  }
-}
-
-// Supabase client initialization (when credentials are available)
-export async function initSupabase() {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.log('Supabase not configured - using mock data')
-    return null
-  }
-  
-  try {
-    const { createClient } = await import('@supabase/supabase-js')
-    return createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  } catch (error) {
-    console.error('Failed to initialize Supabase:', error)
-    return null
+    supabase: !!supabase,
   }
 }
