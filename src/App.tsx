@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
-  fetchMetrics,
+  fetchAmens,
+  fetchSitevitrine,
+  fetchFlashcert,
   toMetricCards,
   getProjectStatus,
   getProjectAccent,
   getProjectIcon,
-  getProjectData,
-  type DashData,
+  type ProjectId,
+  type ProjectFetchResult,
   type MetricCard,
 } from './lib/metrics'
 
@@ -64,15 +66,15 @@ function SkeletonGrid({ count = 6 }: { count?: number }) {
 
 function EmptyState({ projectId }: { projectId: string }) {
   const messages: Record<string, { icon: string; title: string; desc: string }> = {
-    agentcrm: {
+    sitevitrine: {
       icon: '🔌',
-      title: 'AgentCRM non connecté',
-      desc: "Les tables Supabase AgentCRM n'ont pas été trouvées. Vérifiez la configuration.",
+      title: 'Sitevitrine non connecté',
+      desc: 'VITE_TRAILBASE_URL manquante ou TrailBase indisponible.',
     },
     flashcert: {
       icon: '🚧',
       title: 'FlashCert en attente',
-      desc: 'Le projet FlashCert sera configuré prochainement.',
+      desc: 'Le projet FlashCert sera connecté prochainement.',
     },
   }
   const msg = messages[projectId] || {
@@ -117,26 +119,25 @@ function ProjectTab({ id, name, accent, active, onClick, status }: {
   )
 }
 
-function ComparisonView({ data, onSelect }: { data: DashData; onSelect: (id: string) => void }) {
-  const projectIds = ['amens', 'agentcrm', 'flashcert']
-  const allMetrics: Record<string, MetricCard[]> = {}
-  projectIds.forEach(id => {
-    allMetrics[id] = toMetricCards(id, getProjectData(data, id))
-  })
+function ComparisonView({ results, onSelect }: {
+  results: Record<string, ProjectFetchResult | undefined>
+  onSelect: (id: string) => void
+}) {
+  const projectIds: ProjectId[] = ['amens', 'sitevitrine', 'flashcert']
 
   return (
     <div className="comparison-table">
       <div className="comparison-row header">
         <div className="comparison-cell">Projet</div>
         <div className="comparison-cell">Statut</div>
-        <div className="comparison-cell">Métriques</div>
+        <div className="comparison-cell" style={{ textAlign: 'left', paddingLeft: 8 }}>Métriques</div>
         <div className="comparison-cell">MRR</div>
       </div>
       {projectIds.map(id => {
-        const projectData = getProjectData(data, id)
-        const status = getProjectStatus(id, projectData)
+        const result = results[id]
+        const status = result ? getProjectStatus(id, result.metrics, result.status) : 'empty'
         const accent = getProjectAccent(id)
-        const cards = allMetrics[id] || []
+        const cards = result?.metrics ? toMetricCards(id, result.metrics) : []
         const mrr = cards.find(c => c.id.includes('mrr'))
         return (
           <div
@@ -147,14 +148,14 @@ function ComparisonView({ data, onSelect }: { data: DashData; onSelect: (id: str
           >
             <div className="comparison-cell project-name">
               <span className="project-tab-dot" style={{ background: accent }} />
-              {getProjectIcon(id)} {id === 'amens' ? 'Amens' : id === 'agentcrm' ? 'AgentCRM' : id === 'flashcert' ? 'FlashCert' : id}
+              {getProjectIcon(id)} {id === 'amens' ? 'Amens' : id === 'sitevitrine' ? 'Sitevitrine' : id === 'flashcert' ? 'FlashCert' : id}
             </div>
             <div className="comparison-cell">
               <span className={`status-badge ${status === 'active' ? 'active' : status === 'error' ? 'error' : 'warning'}`}>
                 {status === 'active' ? '✓ Actif' : status === 'error' ? '✗ Erreur' : '○ En attente'}
               </span>
             </div>
-            <div className="comparison-cell" style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
+            <div className="comparison-cell" style={{ color: 'var(--text-secondary)', fontSize: 12, textAlign: 'left', paddingLeft: 8 }}>
               {cards.length} métriques
             </div>
             <div className="comparison-cell" style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: mrr ? accent : 'var(--text-tertiary)' }}>
@@ -170,42 +171,65 @@ function ComparisonView({ data, onSelect }: { data: DashData; onSelect: (id: str
 // ─── Main App ──────────────────────────────────────────────────────────────────
 
 const PROJECTS = [
-  { id: 'amens', name: 'Amens' },
-  { id: 'agentcrm', name: 'AgentCRM' },
-  { id: 'flashcert', name: 'FlashCert' },
+  { id: 'amens' as const,       name: 'Amens' },
+  { id: 'sitevitrine' as const, name: 'Sitevitrine' },
+  { id: 'flashcert' as const,   name: 'FlashCert' },
 ]
 
 export default function App() {
-  const [data, setData] = useState<DashData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedProject, setSelectedProject] = useState('amens')
+  const [results, setResults] = useState<Record<string, ProjectFetchResult | undefined>>({})
+  const [loading, setLoading] = useState<Record<string, boolean>>({})
+  const [selectedProject, setSelectedProject] = useState<ProjectId>('amens')
   const [lastFetch, setLastFetch] = useState<Date | null>(null)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+  const fetchProject = useCallback(async (projectId: ProjectId) => {
+    setLoading(prev => ({ ...prev, [projectId]: true }))
     try {
-      const result = await fetchMetrics()
-      setData(result)
-      setLastFetch(new Date())
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue')
+      let result: ProjectFetchResult
+      if (projectId === 'amens') result = await fetchAmens()
+      else if (projectId === 'sitevitrine') result = await fetchSitevitrine()
+      else result = await fetchFlashcert()
+      setResults(prev => ({ ...prev, [projectId]: result }))
     } finally {
-      setLoading(false)
+      setLoading(prev => ({ ...prev, [projectId]: false }))
     }
   }, [])
 
-  useEffect(() => {
-    load()
-    const interval = setInterval(load, 60000) // Refresh every minute
-    return () => clearInterval(interval)
-  }, [load])
+  const loadAll = useCallback(async () => {
+    setLoading({ amens: true, sitevitrine: true, flashcert: true })
+    const [amensRes, sitevitrineRes, flashcertRes] = await Promise.allSettled([
+      fetchAmens(),
+      fetchSitevitrine(),
+      fetchFlashcert(),
+    ])
+    setResults({
+      amens: amensRes.status === 'fulfilled' ? amensRes.value : { status: 'error', error: 'Échec' },
+      sitevitrine: sitevitrineRes.status === 'fulfilled' ? sitevitrineRes.value : { status: 'error', error: 'Échec' },
+      flashcert: flashcertRes.status === 'fulfilled' ? flashcertRes.value : { status: 'error', error: 'Échec' },
+    })
+    setLoading({ amens: false, sitevitrine: false, flashcert: false })
+    setLastFetch(new Date())
+  }, [])
 
-  const projectData = data ? getProjectData(data, selectedProject) : null
-  const projectStatus = projectData ? getProjectStatus(selectedProject, projectData) : 'empty'
+  // Retry a single project
+  const retryProject = useCallback((projectId: ProjectId) => {
+    fetchProject(projectId)
+  }, [fetchProject])
+
+  useEffect(() => {
+    loadAll()
+    const interval = setInterval(loadAll, 60000) // Refresh every minute
+    return () => clearInterval(interval)
+  }, [loadAll])
+
+  const currentResult = results[selectedProject]
+  const projectStatus = currentResult
+    ? getProjectStatus(selectedProject, currentResult.metrics, currentResult.status)
+    : 'empty'
   const accent = getProjectAccent(selectedProject)
-  const cards = projectData ? toMetricCards(selectedProject, projectData) : []
+  const cards = currentResult?.metrics ? toMetricCards(selectedProject, currentResult.metrics) : []
+
+  const anyLoading = Object.values(loading).some(Boolean)
 
   // Determine data freshness
   const getFreshness = () => {
@@ -229,7 +253,7 @@ export default function App() {
         </div>
 
         <div className="header-meta">
-          {!loading && (
+          {!anyLoading && (
             <div className="header-updated">
               <span className={`header-updated-dot ${freshness.cls}`} />
               {freshness.label}
@@ -244,7 +268,7 @@ export default function App() {
                 accent={getProjectAccent(p.id)}
                 active={selectedProject === p.id}
                 onClick={() => setSelectedProject(p.id)}
-                status={data ? getProjectStatus(p.id, getProjectData(data, p.id)) : 'empty'}
+                status={results[p.id] ? getProjectStatus(p.id, results[p.id]!.metrics, results[p.id]!.status) : 'empty'}
               />
             ))}
           </div>
@@ -252,7 +276,7 @@ export default function App() {
       </header>
 
       <main className="content">
-        {loading && !data && (
+        {anyLoading && !results.amens && (
           <>
             <div className="section">
               <div className="section-header"><div className="section-title">Métriques</div></div>
@@ -261,9 +285,15 @@ export default function App() {
           </>
         )}
 
-        {error && !data && <ErrorState message={error} onRetry={load} />}
+        {/* Error states per project — shown only for the selected project */}
+        {currentResult?.status === 'error' && !loading[selectedProject] && (
+          <ErrorState
+            message={currentResult.error || 'Erreur inconnue'}
+            onRetry={() => retryProject(selectedProject)}
+          />
+        )}
 
-        {data && (
+        {currentResult && currentResult.status !== 'error' && (
           <>
             {/* Selected Project View */}
             <div className="section">
@@ -271,16 +301,16 @@ export default function App() {
                 <div className="section-title">
                   {getProjectIcon(selectedProject)} {PROJECTS.find(p => p.id === selectedProject)?.name} — Métriques
                 </div>
-                {data.generated_at && (
+                {currentResult.generated_at && (
                   <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
-                    Données du {new Date(data.generated_at).toLocaleString('fr-FR')}
+                    Données du {new Date(currentResult.generated_at).toLocaleString('fr-FR')}
                   </span>
                 )}
               </div>
 
               {projectStatus === 'active' && cards.length > 0 && (
                 <div className="kpi-grid">
-                  {cards.map((card) => (
+                  {cards.map(card => (
                     <KpiCard key={card.id} card={card} accent={accent} />
                   ))}
                 </div>
@@ -290,7 +320,9 @@ export default function App() {
                 <EmptyState projectId={selectedProject} />
               )}
 
-              {projectStatus !== 'active' && <EmptyState projectId={selectedProject} />}
+              {(projectStatus === 'empty' && currentResult.status === 'not_configured') && (
+                <EmptyState projectId={selectedProject} />
+              )}
             </div>
 
             {/* All Projects Comparison */}
@@ -298,7 +330,7 @@ export default function App() {
               <div className="section-header">
                 <div className="section-title">Vue d'ensemble</div>
               </div>
-              <ComparisonView data={data} onSelect={setSelectedProject} />
+              <ComparisonView results={results} onSelect={(id) => setSelectedProject(id as ProjectId)} />
             </div>
           </>
         )}

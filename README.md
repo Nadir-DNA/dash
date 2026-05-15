@@ -1,92 +1,107 @@
 # Dash ◎
 
-Dashboard multi-projets pour suivre les KPIs et objectifs en temps réel.
+Dashboard multi-projets pour suivre les KPIs et objectifs en temps réel, sans backend.
 
-**Live Demo:** https://nadir-dna.github.io/dash
+**Live:** https://nadir-dna.github.io/dash
 
 ## Stack
 
-- **Frontend:** React + TypeScript + Vite
+- **Frontend:** React 19 + TypeScript + Vite 8
 - **Styling:** Tailwind CSS v4
-- **Design:** Nothing Design (noir profond #0A0A0A + rouge #FF0000)
-- **Mobile:** Mobile-first responsive
+- **Data:** Supabase (Amens) + TrailBase local (Sitevitrine) — requêtes directes navigateur, pas de cron, pas de backend intermédiaire
 - **Deploy:** GitHub Pages
+
+## Architecture
+
+```
+Browser (React)
+ ├── Supabase (Amens)         — @supabase/supabase-js — anon key
+ └── TrailBase local (Sitevitrine) — REST /api/records/v1
+```
+
+Plus de cron, plus de `metrics.json` statique, plus de backend. Le frontend interroge les sources de données directement.
 
 ## Installation
 
 ```bash
 npm install
+```
+
+## Configuration
+
+```bash
+cp .env.example .env.local
+```
+
+Remplir les 3 variables dans `.env.local` :
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | URL Supabase Amens |
+| `VITE_SUPABASE_ANON_KEY` | Clé anon Supabase Amens |
+| `VITE_TRAILBASE_URL` | URL TrailBase locale (ex: `http://localhost:4000`) |
+
+```bash
 npm run dev
 ```
+
+Ouvrir http://localhost:5173/dash/
+
+## Projets affichés
+
+| Projet | Source | Icône |
+|--------|--------|-------|
+| Amens | Supabase | 🧘 |
+| Sitevitrine | TrailBase local | 🌐 |
+| FlashCert | Placeholder (en attente) | 🎓 |
 
 ## Déploiement GitHub Pages
 
 ```bash
-# Build and deploy to GitHub Pages
 npm run deploy
 ```
 
-Le site sera disponible sur: https://nadir-dna.github.io/dash
+## Fichiers legacy (non utilisés par le frontend)
 
-## Architecture
+Les scripts suivants sont conservés pour référence mais ne sont plus utilisés :
+- `scripts/collect_metrics.py` — ancien collecteur Python
+- `scripts/collect_adapted.py` — variante adaptée
+- `scripts/collect_metrics_v2.py` — version avec Supabase Storage
+- `scripts/cron_metrics.py` — wrapper cron
+- `supabase/*.sql` — migrations SQL historiques
+- `public/metrics.json` — fichier statique obsolète
 
-```
-GitHub Pages (frontend React)
-    ↓ appels HTTP
-Supabase (API + base de données)
-    ↑ données
-Cron job (browser-use scraping)
-```
+Le frontend n'importe ni ne dépend d'aucun de ces fichiers.
 
 ## Fonctionnalités
 
-- Sélection de projet dynamique (7 projets)
-- KPIs avec objectifs et écarts
-- Statuts visuels (✅ ⚠️ ❌)
-- Vue d'ensemble des réseaux sociaux
-- Design minimaliste Nothing
+- Métriques temps réel par projet
+- KPIs avec barres de progression et objectifs
+- Statuts visuels (✓ Actif, ○ En attente, ✗ Erreur)
+- Vue d'ensemble multi-projets
+- Rechargement automatique (60s)
+- Retry indépendant par projet en cas d'erreur
 - Responsive mobile-first
-
-## Thème Nothing
-
-### Couleurs
-
-| Élément | Hex |
-|---------|-----|
-| Background | #0A0A0A |
-| Text | #FFFFFF |
-| Gray | #888888 |
-| Red | #FF0000 |
-| Border | #222222 |
-
-### Typographie
-
-- Titres: Montserrat Bold
-- Corps: Inter
 
 ## Structure
 
 ```
 dash/
 ├── src/
-│   ├── App.tsx          # Composant principal
-│   ├── App.css          # Styles spécifiques
-│   ├── index.css        # Tailwind + thème Nothing
-│   └── main.tsx         # Point d'entrée
+│   ├── App.tsx                   # Composant principal
+│   ├── index.css                 # Design system + Tailwind
+│   ├── main.tsx                  # Point d'entrée
+│   └── lib/
+│       ├── metrics.ts            # Fetchers + métriques par projet
+│       ├── supabaseClient.ts     # Client Supabase (@supabase/supabase-js)
+│       └── trailbaseClient.ts    # Client TrailBase REST
 ├── public/
-│   └── 404.html         # SPA routing
-├── index.html           # Entry point
-├── vite.config.ts      # Vite config + GitHub Pages base
-└── README.md            # Documentation
+│   └── 404.html                  # SPA routing
+├── .env.example                  # Template variables d'env
+├── index.html                    # Entry point
+├── vite.config.ts               # Vite config + GitHub Pages base
+└── README.md                     # Documentation
 ```
-
-## Prochaines Étapes
-
-- [ ] Intégrer Supabase (API + DB)
-- [ ] Connecter browser-use pour scraping
-- [ ] Ajouter export PDF/Excel
-- [ ] Configurer notifications Telegram
-- [ ] Ajouter auth (si nécessaire)
 
 ---
 
