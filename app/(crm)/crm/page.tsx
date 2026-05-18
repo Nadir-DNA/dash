@@ -71,9 +71,9 @@ async function getGeneralData(page: number) {
     ...contacts,
     ...sites.map(s => ({
       ...s,
-      first_name: s.name,
+      first_name: (s as Record<string, unknown>).name as string,
       last_name: '',
-      stage: s.stage ?? s.status ?? 'new',
+      stage: ((s as Record<string, unknown>).stage ?? (s as Record<string, unknown>).status ?? 'new') as string,
     })),
   ]
   return {

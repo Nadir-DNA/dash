@@ -27,7 +27,7 @@ export default async function NewContactPage({ params }: { params: Promise<{ id:
         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
           <Link href="/companies" className="hover:text-foreground">Companies</Link>
           <span>/</span>
-          <Link href={`/companies/${id}`} className="hover:text-foreground">{company.name}</Link>
+          <Link href={`/companies/${id}`} className="hover:text-foreground">{String(company.name ?? '')}</Link>
           <span>/</span>
           <span className="text-foreground">Nouveau lead</span>
         </div>
@@ -38,7 +38,7 @@ export default async function NewContactPage({ params }: { params: Promise<{ id:
       </div>
       <ContactForm
         action={createContact}
-        companies={allCompanies ?? []}
+        companies={(allCompanies ?? []) as { id: string; name: string }[]}
         defaultCompanyId={id}
         cancelHref={`/companies/${id}`}
       />

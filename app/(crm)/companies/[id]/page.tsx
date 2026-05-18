@@ -79,8 +79,8 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
           <div className="flex items-center gap-2">
             <Building2 className="size-5 text-muted-foreground" />
             <h1 className="text-xl font-semibold">{company.name as string}</h1>
-            {company.industry && <Badge variant="outline">{company.industry as string}</Badge>}
-            {company.size && <Badge variant="secondary">{company.size as string} employés</Badge>}
+            {!!company.industry && <Badge variant="outline">{company.industry as string}</Badge>}
+            {!!company.size && <Badge variant="secondary">{company.size as string} employés</Badge>}
           </div>
           <div className="flex gap-2">
             <Link href={`/companies/${id}/edit`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
@@ -248,7 +248,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
               <CardTitle className="text-sm font-medium">Informations</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              {company.domain && (
+              {!!company.domain && (
                 <div className="flex items-start gap-2">
                   <Globe className="size-4 text-muted-foreground mt-0.5" />
                   <div>
@@ -257,7 +257,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
                   </div>
                 </div>
               )}
-              {company.website && (
+              {!!company.website && (
                 <div className="flex items-start gap-2">
                   <Globe className="size-4 text-muted-foreground mt-0.5" />
                   <div>
@@ -268,7 +268,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
                   </div>
                 </div>
               )}
-              {company.industry && (
+              {!!company.industry && (
                 <div className="flex items-start gap-2">
                   <Tag className="size-4 text-muted-foreground mt-0.5" />
                   <div>
@@ -277,7 +277,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
                   </div>
                 </div>
               )}
-              {company.size && (
+              {!!company.size && (
                 <div className="flex items-start gap-2">
                   <Hash className="size-4 text-muted-foreground mt-0.5" />
                   <div>
@@ -286,12 +286,12 @@ export default async function CompanyPage({ params }: { params: Promise<{ id: st
                   </div>
                 </div>
               )}
-              {(company.domain || company.website || company.industry || company.size) && <Separator />}
+              {!!(company.domain || company.website || company.industry || company.size) && <Separator />}
               <div>
                 <div className="text-muted-foreground text-xs mb-1">Créée</div>
                 <div>{new Date(company.created_at as string).toLocaleDateString('fr-FR')}</div>
               </div>
-              {company.notes && (
+              {!!company.notes && (
                 <>
                   <Separator />
                   <div>

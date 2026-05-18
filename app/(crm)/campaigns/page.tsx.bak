@@ -24,14 +24,14 @@ export default async function CampaignsPage() {
     companiesMap.set(c.id as string, c.name as string)
   }
 
-  const campaigns = rawCampaigns.map((c: Record<string, unknown>) => ({
+  const campaigns = rawCampaigns.map((c) => ({
     ...c,
     companies: c.company_id ? { name: companiesMap.get(c.company_id as string) ?? null } : null,
-  }) as Record<string, unknown>)
+  }))
 
-  const active = campaigns?.filter(c => c.status === 'active').length ?? 0
-  const totalSent = campaigns?.reduce((s, c) => s + ((c.sent_count as number) ?? 0), 0) ?? 0
-  const totalOpens = campaigns?.reduce((s, c) => s + ((c.open_count as number) ?? 0), 0) ?? 0
+  const active = campaigns?.filter((c: Record<string, unknown>) => c.status === 'active').length ?? 0
+  const totalSent = campaigns?.reduce((s: number, c: Record<string, unknown>) => s + ((c.sent_count as number) ?? 0), 0) ?? 0
+  const totalOpens = campaigns?.reduce((s: number, c: Record<string, unknown>) => s + ((c.open_count as number) ?? 0), 0) ?? 0
   const openRate = totalSent > 0 ? Math.round((totalOpens / totalSent) * 100) : 0
 
   return (

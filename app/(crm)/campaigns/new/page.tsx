@@ -24,7 +24,7 @@ export default async function NewCampaignPage() {
       </div>
       <CampaignForm
         action={createCampaign}
-        companies={companies ?? []}
+        companies={(companies ?? []) as { id: string; name: string }[]}
         cancelHref="/campaigns"
       />
     </div>

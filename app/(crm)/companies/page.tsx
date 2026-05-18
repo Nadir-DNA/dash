@@ -62,11 +62,11 @@ export default async function CompaniesPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-base">{company.name as string}</CardTitle>
-                    {company.domain && (
+                    {!!company.domain && (
                       <p className="text-sm text-muted-foreground">{company.domain as string}</p>
                     )}
                   </div>
-                  {company.industry && (
+                  {!!company.industry && (
                     <Badge variant="outline" className="text-xs shrink-0">{company.industry as string}</Badge>
                   )}
                 </div>

@@ -11,6 +11,7 @@ import {
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Users, Plus } from 'lucide-react'
 import { STAGE_VARIANTS, STAGE_LABELS } from '@/lib/constants'
+import type { CompareOp } from 'trailbase'
 
 export default async function ContactsPage({
   searchParams,
@@ -21,9 +22,9 @@ export default async function ContactsPage({
   const client = await createClient()
 
   // Build filters
-  const filters: { column: string; op: string; value: string }[] = []
-  if (stage && stage !== 'all') filters.push({ column: 'stage', op: 'equal', value: stage })
-  if (company && company !== 'all') filters.push({ column: 'company_id', op: 'equal', value: company })
+  const filters: { column: string; op: CompareOp; value: string }[] = []
+  if (stage && stage !== 'all') filters.push({ column: 'stage', op: 'equal' as CompareOp, value: stage })
+  if (company && company !== 'all') filters.push({ column: 'company_id', op: 'equal' as CompareOp, value: company })
 
   const contactsRes = await client.records('contacts').list({
     filters: filters.length > 0 ? filters : undefined,
@@ -107,7 +108,7 @@ export default async function ContactsPage({
                   <Link href={`/contacts/${contact.id}`} className="font-medium hover:underline">
                     {contact.first_name as string} {contact.last_name as string}
                   </Link>
-                  {contact.title && <p className="text-xs text-muted-foreground">{contact.title as string}</p>}
+                  {!!contact.title && <p className="text-xs text-muted-foreground">{contact.title as string}</p>}
                 </TableCell>
                 <TableCell className="text-muted-foreground">{(contact.email as string) ?? '—'}</TableCell>
                 <TableCell>

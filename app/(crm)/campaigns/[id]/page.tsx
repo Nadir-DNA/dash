@@ -122,7 +122,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
             </Badge>
           </div>
           <div className="flex items-center gap-2">
-            <CampaignStatusButton id={id} currentStatus={campaign.status as string} />
+            <CampaignStatusButton id={id} currentStatus={campaign.status as "draft" | "active" | "paused" | "completed"} />
             <Link href={`/campaigns/${id}/edit`} className={buttonVariants({ size: 'sm', variant: 'outline' })}>
               <Pencil className="size-4" />
               Modifier
@@ -239,7 +239,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
                   <div>{CHANNEL_LABELS[campaign.channel as string]}</div>
                 </div>
               </div>
-              {campaign.scheduled_at && (
+              {!!campaign.scheduled_at && (
                 <div className="flex items-start gap-2">
                   <CalendarClock className="size-4 text-muted-foreground mt-0.5" />
                   <div>
@@ -256,7 +256,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
             </CardContent>
           </Card>
 
-          {campaign.subject && (
+          {!!campaign.subject && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Objet</CardTitle>
@@ -267,7 +267,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
             </Card>
           )}
 
-          {campaign.body && (
+          {!!campaign.body && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Contenu</CardTitle>

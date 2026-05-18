@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { Mail } from 'lucide-react'
 import { updateCampaign } from '@/app/actions/campaigns'
 import { CampaignForm } from '@/components/campaign-form'
+import type { Tables } from '@/types/database'
 
 export default async function EditCampaignPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -29,7 +30,7 @@ export default async function EditCampaignPage({ params }: { params: Promise<{ i
         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
           <Link href="/campaigns" className="hover:text-foreground">Campaigns</Link>
           <span>/</span>
-          <Link href={`/campaigns/${id}`} className="hover:text-foreground">{campaign.name}</Link>
+          <Link href={`/campaigns/${id}`} className="hover:text-foreground">{String(campaign.name ?? '')}</Link>
           <span>/</span>
           <span className="text-foreground">Modifier</span>
         </div>
@@ -40,8 +41,8 @@ export default async function EditCampaignPage({ params }: { params: Promise<{ i
       </div>
       <CampaignForm
         action={action}
-        campaign={campaign}
-        companies={allCompanies ?? []}
+        campaign={campaign as Tables<'campaigns'>}
+        companies={(allCompanies ?? []) as { id: string; name: string }[]}
         cancelHref={`/campaigns/${id}`}
       />
     </div>

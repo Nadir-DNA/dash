@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Building2 } from 'lucide-react'
 import { updateCompany } from '@/app/actions/companies'
 import { CompanyForm } from '@/components/company-form'
+import type { Tables } from '@/types/database'
 
 export default async function EditCompanyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -24,16 +25,16 @@ export default async function EditCompanyPage({ params }: { params: Promise<{ id
         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
           <Link href="/companies" className="hover:text-foreground transition-colors">Companies</Link>
           <span>/</span>
-          <Link href={`/companies/${id}`} className="hover:text-foreground transition-colors">{company.name}</Link>
+          <Link href={`/companies/${id}`} className="hover:text-foreground transition-colors">{String(company.name ?? '')}</Link>
           <span>/</span>
           <span className="text-foreground">Modifier</span>
         </div>
         <div className="flex items-center gap-2">
           <Building2 className="size-5 text-muted-foreground" />
-          <h1 className="text-xl font-semibold">Modifier {company.name}</h1>
+          <h1 className="text-xl font-semibold">Modifier {String(company.name ?? '')}</h1>
         </div>
       </div>
-      <CompanyForm action={action} company={company} cancelHref={`/companies/${id}`} />
+      <CompanyForm action={action} company={company as Tables<'companies'>} cancelHref={`/companies/${id}`} />
     </div>
   )
 }

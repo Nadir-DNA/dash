@@ -1,42 +1,54 @@
-import { NextResponse } from 'next/server';
-import type { ProjectName } from '@/lib/metrics/types';
-import { getProjectMetrics, invalidateCache } from '@/lib/metrics/aggregator';
+import { NextResponse } from 'next/server'
+import { getProjectMetrics, invalidateCache } from '@/lib/metrics/aggregator'
+import type { ProjectName } from '@/lib/metrics/types'
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
-const VALID_PROJECTS: ProjectName[] = ['amens', 'flashcert', 'crm', 'sitevitrine', 'leagueplay'];
+const VALID_PROJECTS: ProjectName[] = ['amens', 'flashcert', 'crm', 'sitevitrine', 'leagueplay']
 
-function isValidProject(name: string): name is ProjectName {
-  return VALID_PROJECTS.includes(name as ProjectName);
-}
-
+/**
+ * GET /api/metrics/[project]/refresh
+ * Refresh and return metrics for a specific project.
+ * Invalidate the cache first so fresh data is fetched.
+ *
+ * Example: GET /api/metrics/crm/refresh
+ */
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ project: string }> }
 ) {
-  const { project } = await params;
+  const { project } = await params
 
-  if (!isValidProject(project)) {
+  if (!VALID_PROJECTS.includes(project as ProjectName)) {
     return NextResponse.json(
-      { error: `Invalid project: "${project}". Valid: ${VALID_PROJECTS.join(', ')}` },
+      {
+        error: 'Invalid project',
+        validProjects: VALID_PROJECTS,
+        received: project,
+      },
       { status: 400 }
-    );
+    )
   }
 
   try {
-    invalidateCache();
-    const data = await getProjectMetrics(project);
-    if (!data) {
-      return NextResponse.json({ error: `Project "${project}" not found` }, { status: 404 });
+    // Invalidate cache so we get fresh data
+    invalidateCache()
+
+    const metrics = await getProjectMetrics(project as ProjectName)
+    if (!metrics) {
+      return NextResponse.json(
+        { error: 'Project metrics not available' },
+        { status: 404 }
+      )
     }
-    return NextResponse.json({ ...data, _cache: 'invalidated' });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error(`[API] /metrics/${project}/refresh error:`, message);
+
+    return NextResponse.json(metrics)
+  } catch (error) {
+    console.error(`[API/metrics/${project}/refresh] Error:`, error)
     return NextResponse.json(
-      { error: `Failed to refresh metrics for ${project}`, details: message },
+      { error: 'Failed to refresh metrics', message: (error as Error).message },
       { status: 500 }
-    );
+    )
   }
 }

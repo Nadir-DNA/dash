@@ -81,7 +81,7 @@ export async function countRecords(
   }
 }
 
-export async function fetchAllRecords(table: string, limit = 5000): Promise<Record<string, unknown>[]> {
+export async function fetchAllRecords(table: string, limit = 1024): Promise<Record<string, unknown>[]> {
   try {
     const client = getClient();
     const result = await client.records(table).list({ pagination: { limit } });

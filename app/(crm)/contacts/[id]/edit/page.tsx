@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Users } from 'lucide-react'
 import { updateContact } from '@/app/actions/contacts'
 import { ContactForm } from '@/components/contact-form'
+import type { Tables } from '@/types/database'
 
 export default async function EditContactPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -29,19 +30,19 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
           <Link href="/contacts" className="hover:text-foreground">Leads</Link>
           <span>/</span>
-          <Link href={`/contacts/${id}`} className="hover:text-foreground">{contact.first_name} {contact.last_name}</Link>
+          <Link href={`/contacts/${id}`} className="hover:text-foreground">{String(contact.first_name ?? '')} {String(contact.last_name ?? '')}</Link>
           <span>/</span>
           <span className="text-foreground">Modifier</span>
         </div>
         <div className="flex items-center gap-2">
           <Users className="size-5 text-muted-foreground" />
-          <h1 className="text-xl font-semibold">Modifier {contact.first_name} {contact.last_name}</h1>
+          <h1 className="text-xl font-semibold">Modifier {String(contact.first_name ?? '')} {String(contact.last_name ?? '')}</h1>
         </div>
       </div>
       <ContactForm
         action={action}
-        contact={contact}
-        companies={allCompanies ?? []}
+        contact={contact as Tables<'contacts'>}
+        companies={(allCompanies ?? []) as { id: string; name: string }[]}
         cancelHref={`/contacts/${id}`}
       />
     </div>

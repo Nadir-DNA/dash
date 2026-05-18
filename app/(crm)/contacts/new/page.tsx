@@ -24,7 +24,7 @@ export default async function NewContactPage() {
       </div>
       <ContactForm
         action={createContact}
-        companies={companies ?? []}
+        companies={(companies ?? []) as { id: string; name: string }[]}
         cancelHref="/contacts"
       />
     </div>

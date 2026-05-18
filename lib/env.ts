@@ -8,4 +8,6 @@ function requireEnv(name: string): string {
 
 export const env = {
   TRAILBASE_URL: requireEnv('NEXT_PUBLIC_TRAILBASE_URL'),
+  SUPABASE_URL: requireEnv('SUPABASE_URL'),
+  SUPABASE_ANON_KEY: requireEnv('SUPABASE_ANON_KEY'),
 }

@@ -134,20 +134,20 @@ export default function BatchDetailPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
               <div className="text-center">
-                <div style={{ fontSize:28, fontWeight:700, fontFamily:'var(--font-display)', tabularNums:'true', color:'var(--color-text)' }}>{stats.sent + stats.replied}</div>
+                <div style={{ fontSize:28, fontWeight:700, fontFamily:'var(--font-display)', fontVariantNumeric:'tabular-nums' as const, color:'var(--color-text)' }}>{stats.sent + stats.replied}</div>
                 <div style={{ fontSize:10, color:'var(--color-text-tertiary)', marginTop:2 }}>Traités</div>
               </div>
               <div className="text-center">
-                <div style={{ fontSize:28, fontWeight:700, fontFamily:'var(--font-display)', tabularNums:'true', color:'#22C55E' }}>{stats.replied}</div>
+                <div style={{ fontSize:28, fontWeight:700, fontFamily:'var(--font-display)', fontVariantNumeric: 'tabular-nums' as const, color:'#22C55E' }}>{stats.replied}</div>
                 <div style={{ fontSize:10, color:'var(--color-text-tertiary)', marginTop:2 }}>Réponses GO</div>
               </div>
               <div className="text-center">
-                <div style={{ fontSize:28, fontWeight:700, fontFamily:'var(--font-display)', tabularNums:'true', color:'var(--color-text-tertiary)' }}>{stats.pending}</div>
+                <div style={{ fontSize:28, fontWeight:700, fontFamily:'var(--font-display)', fontVariantNumeric: 'tabular-nums' as const, color:'var(--color-text-tertiary)' }}>{stats.pending}</div>
                 <div style={{ fontSize:10, color:'var(--color-text-tertiary)', marginTop:2 }}>En attente</div>
               </div>
             </div>
             <div style={{ textAlign:'right' }}>
-              <div style={{ fontSize:24, fontWeight:700, fontFamily:'var(--font-display)', tabularNums:'true', color:'var(--color-text)' }}>{stats.total}</div>
+              <div style={{ fontSize:24, fontWeight:700, fontFamily:'var(--font-display)', fontVariantNumeric: 'tabular-nums' as const, color:'var(--color-text)' }}>{stats.total}</div>
               <div style={{ fontSize:10, color:'var(--color-text-tertiary)', marginTop:2 }}>Total</div>
             </div>
           </div>

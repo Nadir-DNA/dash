@@ -62,7 +62,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             </div>
             <div>
               <h1 className="text-xl font-semibold">{contact.first_name as string} {contact.last_name as string}</h1>
-              {contact.title && <p className="text-sm text-muted-foreground">{contact.title as string}</p>}
+              {!!contact.title && <p className="text-sm text-muted-foreground">{contact.title as string}</p>}
             </div>
             <Badge variant={STAGE_VARIANTS[contact.stage as string]}>{STAGE_LABELS[contact.stage as string]}</Badge>
           </div>
@@ -84,13 +84,13 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
               <CardTitle className="text-sm font-medium">Coordonnées</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              {contact.email && (
+              {!!contact.email && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Mail className="size-4 shrink-0" />
                   <a href={`mailto:${contact.email}`} className="hover:text-foreground">{contact.email as string}</a>
                 </div>
               )}
-              {contact.phone && (
+              {!!contact.phone && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Phone className="size-4 shrink-0" />
                   <a href={`tel:${contact.phone}`} className="hover:text-foreground">{contact.phone as string}</a>
@@ -102,19 +102,19 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
                   <Link href={`/companies/${company.id}`} className="hover:text-foreground">{company.name}</Link>
                 </div>
               )}
-              {contact.source && (
+              {!!contact.source && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Tag className="size-4 shrink-0" />
                   <span>Source : {contact.source as string}</span>
                 </div>
               )}
-              {contact.value && (
+              {!!contact.value && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <span className="size-4 shrink-0 text-center">€</span>
                   <span>{Number(contact.value).toLocaleString('fr-FR')} €</span>
                 </div>
               )}
-              {contact.last_contacted_at && (
+              {!!contact.last_contacted_at && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="size-4 shrink-0" />
                   <span>Dernier contact : {new Date(contact.last_contacted_at as string).toLocaleDateString('fr-FR')}</span>
@@ -123,7 +123,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             </CardContent>
           </Card>
 
-          {contact.notes && (
+          {!!contact.notes && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium">Notes</CardTitle>
@@ -152,7 +152,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
                             {new Date(interaction.created_at as string).toLocaleDateString('fr-FR')}
                           </span>
                         </div>
-                        {interaction.subject && <p className="text-muted-foreground">{interaction.subject as string}</p>}
+                        {!!interaction.subject && <p className="text-muted-foreground">{interaction.subject as string}</p>}
                       </div>
                     </div>
                   ))}
@@ -166,7 +166,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
 
         {/* Pipeline stage */}
         <div>
-          <StageSelector contactId={id} companyId={contact.company_id as string} currentStage={contact.stage as string} />
+          <StageSelector contactId={id} companyId={contact.company_id as string} currentStage={contact.stage as "new" | "contacted" | "qualified" | "proposal" | "negotiation" | "won" | "lost"} />
         </div>
       </div>
     </div>
