@@ -1,0 +1,19 @@
+{
+  "city_index": 13,
+  "profession_index": 2,
+  "last_run": "2026-04-10T10:52:29.062279",
+  "total_runs": 151,
+  "total_leads": 10475,
+  "completed": [
+    {
+      "city": "Paris",
+      "profession": "coach sportif",
+      "leads": 553
+    },
+    {
+      "city": "Lyon",
+      "profession": "coach sportif",
+      "leads": 121
+    }
+  ]
+}

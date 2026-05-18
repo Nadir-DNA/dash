@@ -1,0 +1,14 @@
+email {}
+server {
+  application_name: "TrailBase"
+  logs_retention_sec: 604800
+}
+auth {
+  auth_token_ttl_sec: 3600
+  refresh_token_ttl_sec: 2592000
+}
+jobs {}
+record_apis {
+  name: "contacts"
+  table_name: "contacts"
+}

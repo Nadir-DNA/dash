@@ -1,0 +1,64 @@
+# Auto-generated config.Config textproto
+email {}
+server {
+  application_name: "TrailBase"
+  logs_retention_sec: 604800
+}
+auth {
+  auth_token_ttl_sec: 3600
+  refresh_token_ttl_sec: 2592000
+}
+jobs {}
+record_apis: [{
+  name: "contacts"
+  table_name: "contacts"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "companies"
+  table_name: "companies"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "campaigns"
+  table_name: "campaigns"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "sms_batches"
+  table_name: "sms_batches"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "sms_batch_contacts"
+  table_name: "sms_batch_contacts"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "flashcert_users"
+  table_name: "flashcert_users"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "flashcert_conversions"
+  table_name: "flashcert_conversions"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "flashcert_cpf_submissions"
+  table_name: "flashcert_cpf_submissions"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "flashcert_page_views"
+  table_name: "flashcert_page_views"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "sitevitrine_sites"
+  table_name: "sitevitrine_sites"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "leagueplay_players"
+  table_name: "leagueplay_players"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "leagueplay_teams"
+  table_name: "leagueplay_teams"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}, {
+  name: "leagueplay_games"
+  table_name: "leagueplay_games"
+  acl_world: [READ, CREATE, UPDATE, DELETE]
+}]

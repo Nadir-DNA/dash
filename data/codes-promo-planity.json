@@ -1,0 +1,44 @@
+{
+  "codes": [
+    {
+      "code": "PLANITY-FDA4-7F2B",
+      "discount": 100,
+      "duration_months": 1,
+      "max_uses": 1,
+      "used_count": 0,
+      "active": true,
+      "created_at": "2026-05-14T11:08:38.656Z",
+      "description": "1 mois offert - Testeur Planity.ma #1"
+    },
+    {
+      "code": "PLANITY-82E4-D1E2",
+      "discount": 100,
+      "duration_months": 1,
+      "max_uses": 1,
+      "used_count": 0,
+      "active": true,
+      "created_at": "2026-05-14T11:08:38.657Z",
+      "description": "1 mois offert - Testeur Planity.ma #2"
+    },
+    {
+      "code": "PLANITY-C7D2-E804",
+      "discount": 100,
+      "duration_months": 1,
+      "max_uses": 1,
+      "used_count": 0,
+      "active": true,
+      "created_at": "2026-05-14T11:08:38.657Z",
+      "description": "1 mois offert - Testeur Planity.ma #3"
+    },
+    {
+      "code": "PLANITY-6B22-CD44",
+      "discount": 100,
+      "duration_months": 1,
+      "max_uses": 1,
+      "used_count": 0,
+      "active": true,
+      "created_at": "2026-05-14T11:08:38.657Z",
+      "description": "1 mois offert - Testeur Planity.ma #4"
+    }
+  ]
+}

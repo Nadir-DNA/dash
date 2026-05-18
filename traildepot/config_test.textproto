@@ -1,0 +1,35 @@
+email {}
+server {
+  application_name: "TrailBase"
+  logs_retention_sec: 604800
+}
+auth {
+  auth_token_ttl_sec: 3600
+  refresh_token_ttl_sec: 2592000
+}
+jobs {}
+record_apis {
+  name: "contacts"
+  table_name: "contacts"
+  acl_world: READ_WRITE
+}
+record_apis {
+  name: "companies"
+  table_name: "companies"
+  acl_world: READ_WRITE
+}
+record_apis {
+  name: "campaigns"
+  table_name: "campaigns"
+  acl_world: READ_WRITE
+}
+record_apis {
+  name: "sms_batches"
+  table_name: "sms_batches"
+  acl_world: READ_WRITE
+}
+record_apis {
+  name: "sms_batch_contacts"
+  table_name: "sms_batch_contacts"
+  acl_world: READ_WRITE
+}

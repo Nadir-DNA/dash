@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Dash
+Comment=Nothing Glyph Dashboard — CRM · SMS · Marketing
+Exec=konsole --noclose -e /home/nadir/projects/dash/scripts/start-dash.sh
+Icon=/home/nadir/projects/dash/public/dash-icon.svg
+Terminal=false
+Type=Application
+Categories=Development;Office;
+Keywords=dashboard;crm;sms;campaigns;leads;trailbase;
+StartupNotify=true
+StartupWMClass=konsole

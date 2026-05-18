@@ -1,0 +1,11 @@
+name,email,phone,sector,stage
+Alice Martin,alice@test.com,0612345678,Tech,new
+Bob Dupont,bob@test.com,0698765432,Marketing,contacted
+Charlie Bernard,charlie@test.com,0611122233,Finance,qualified
+Diana Petit,diana@test.com,0644455566,RH,new
+Eve Moreau,eve@test.com,0677788899,Sales,interested
+Frank Leroy,frank@test.com,0650011122,IT,new
+Grace Roux,grace@test.com,0662233344,Legal,contacted
+Henry Blanc,henry@test.com,0684455566,Operations,qualified
+Iris Girard,iris@test.com,0696677788,Support,new
+Jack Moreau,jack@test.com,0619901122,Tech,interested
