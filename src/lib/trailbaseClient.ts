@@ -3,6 +3,8 @@
 const TB_URL = import.meta.env.VITE_TRAILBASE_URL as string | undefined
 export const TRAILBASE_CONFIGURED = Boolean(TB_URL)
 
+export const FLASHCERT_ENABLED = Boolean(import.meta.env.VITE_FLASHCERT_ENABLED)
+
 async function tbFetch<T>(path: string): Promise<T> {
   if (!TB_URL) throw new Error('VITE_TRAILBASE_URL non configurée')
   const res = await fetch(`${TB_URL}${path}`, { headers: { Accept: 'application/json' } })

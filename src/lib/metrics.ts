@@ -8,9 +8,22 @@ import { TRAILBASE_CONFIGURED, tbCount, tbList } from './trailbaseClient'
 
 export type ProjectId = 'amens' | 'sitevitrine' | 'flashcert'
 
-export interface ProjectMetrics {
-  [key: string]: number | string | undefined
+export interface AmensMetrics {
+  professionals: number
+  profiles: number
+  subscriptions_active: number
+  bookings_total: number
+  reviews_total: number
+  mrr: number
 }
+
+export interface SitevitrineMetrics {
+  visits: number
+  contacts: number
+  leads: number
+}
+
+export type ProjectMetrics = AmensMetrics | SitevitrineMetrics | Record<string, never>
 
 export interface ProjectFetchResult {
   status: 'ok' | 'error' | 'not_configured' | 'empty'
@@ -61,6 +74,18 @@ const METRIC_DEFS: Record<
   ],
 }
 
+// ─── Amens schema constants ───────────────────────────────────────────────────
+
+const AMENS_TABLES = {
+  professionals: 'professionals',
+  profiles: 'profiles',
+  subscriptions: 'subscriptions',
+  bookings: 'bookings',
+  reviews: 'reviews',
+} as const
+
+const AMENS_FALLBACK_AMOUNT = 29
+
 // ─── TrailBase sources mapping (Sitevitrine) ──────────────────────────────────
 
 type TbMetricSource =
@@ -79,31 +104,41 @@ export async function fetchAmens(): Promise<ProjectFetchResult> {
   if (!supabase) {
     return { status: 'not_configured', error: 'VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY manquantes' }
   }
-  try {
-    const [profCount, profilesCount, subsActive, bookings, reviews, subsData] = await Promise.all([
-      supabase.from('professionals').select('*', { count: 'exact', head: true }),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }),
-      supabase.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-      supabase.from('bookings').select('*', { count: 'exact', head: true }),
-      supabase.from('reviews').select('*', { count: 'exact', head: true }),
-      supabase.from('subscriptions').select('amount').eq('status', 'active'),
-    ])
-    const mrr = (subsData.data ?? []).reduce((s, r) => s + (Number(r.amount) || 29), 0)
-    return {
-      status: 'ok',
-      generated_at: new Date().toISOString(),
-      metrics: {
-        professionals: profCount.count ?? 0,
-        profiles: profilesCount.count ?? 0,
-        subscriptions_active: subsActive.count ?? 0,
-        bookings_total: bookings.count ?? 0,
-        reviews_total: reviews.count ?? 0,
-        mrr,
-      },
-    }
-  } catch (e) {
-    return { status: 'error', error: e instanceof Error ? e.message : String(e) }
+  const [profRes, profilesRes, subsActiveRes, bookingsRes, reviewsRes, subsDataRes] = await Promise.allSettled([
+    supabase.from(AMENS_TABLES.professionals).select('*', { count: 'exact', head: true }),
+    supabase.from(AMENS_TABLES.profiles).select('*', { count: 'exact', head: true }),
+    supabase.from(AMENS_TABLES.subscriptions).select('*', { count: 'exact', head: true }).eq('status', 'active'),
+    supabase.from(AMENS_TABLES.bookings).select('*', { count: 'exact', head: true }),
+    supabase.from(AMENS_TABLES.reviews).select('*', { count: 'exact', head: true }),
+    supabase.from(AMENS_TABLES.subscriptions).select('amount').eq('status', 'active'),
+  ])
+
+  const get = <T>(r: PromiseSettledResult<T>) => (r.status === 'fulfilled' ? r.value : null)
+
+  const profCount     = get(profRes)
+  const profilesCount = get(profilesRes)
+  const subsActive    = get(subsActiveRes)
+  const bookings      = get(bookingsRes)
+  const reviews       = get(reviewsRes)
+  const subsData      = get(subsDataRes)
+
+  const successCount = [profCount, profilesCount, subsActive, bookings, reviews, subsData].filter(Boolean).length
+  if (successCount === 0) {
+    return { status: 'error', error: 'Toutes les requêtes Supabase ont échoué' }
   }
+
+  const mrr = (subsData?.data ?? []).reduce((s, r) => s + (Number(r.amount) || AMENS_FALLBACK_AMOUNT), 0)
+
+  const metrics: AmensMetrics = {
+    professionals:        profCount?.count        ?? -1,
+    profiles:             profilesCount?.count    ?? -1,
+    subscriptions_active: subsActive?.count       ?? -1,
+    bookings_total:       bookings?.count         ?? -1,
+    reviews_total:        reviews?.count          ?? -1,
+    mrr:                  subsData ? mrr : -1,
+  }
+
+  return { status: 'ok', generated_at: new Date().toISOString(), metrics }
 }
 
 export async function fetchSitevitrine(): Promise<ProjectFetchResult> {
@@ -116,23 +151,23 @@ export async function fetchSitevitrine(): Promise<ProjectFetchResult> {
       if (src.kind === 'count') {
         return tbCount(src.table, src.filter)
       }
-      // sum
       const rows = await tbList<Record<string, unknown>>(src.table, src.filter ? { filter: src.filter } : {})
       return rows.reduce((s, r) => s + (Number(r[src.field]) || 0), 0)
     }),
   )
-  const metrics: ProjectMetrics = {}
+  const metrics: Partial<SitevitrineMetrics> = {}
   let successes = 0
   results.forEach((r, i) => {
     if (r.status === 'fulfilled') {
-      metrics[entries[i][0]] = r.value
+      const key = entries[i][0] as keyof SitevitrineMetrics
+      metrics[key] = r.value
       successes++
     }
   })
   if (successes === 0) {
     return { status: 'error', error: 'Aucune table TrailBase accessible' }
   }
-  return { status: 'ok', metrics, generated_at: new Date().toISOString() }
+  return { status: 'ok', metrics: metrics as SitevitrineMetrics, generated_at: new Date().toISOString() }
 }
 
 export async function fetchFlashcert(): Promise<ProjectFetchResult> {
@@ -172,12 +207,13 @@ export function getProjectIcon(projectId: string): string {
 
 export function toMetricCards(projectId: string, data: ProjectMetrics): MetricCard[] {
   const defs = METRIC_DEFS[projectId] || []
+  const dataMap = data as Record<string, number>
   return defs
-    .filter(d => data[d.key] !== undefined && data[d.key] !== -1)
+    .filter(d => dataMap[d.key] !== undefined && dataMap[d.key] !== -1)
     .map(d => ({
       id: `${projectId}-${d.key}`,
       label: d.label,
-      value: typeof data[d.key] === 'number' ? (data[d.key] as number) : 0,
+      value: typeof dataMap[d.key] === 'number' ? dataMap[d.key] : 0,
       unit: d.unit,
       target: d.target,
       description: d.description,

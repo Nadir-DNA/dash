@@ -61,18 +61,6 @@ Ouvrir http://localhost:5173/dash/
 npm run deploy
 ```
 
-## Fichiers legacy (non utilisés par le frontend)
-
-Les scripts suivants sont conservés pour référence mais ne sont plus utilisés :
-- `scripts/collect_metrics.py` — ancien collecteur Python
-- `scripts/collect_adapted.py` — variante adaptée
-- `scripts/collect_metrics_v2.py` — version avec Supabase Storage
-- `scripts/cron_metrics.py` — wrapper cron
-- `supabase/*.sql` — migrations SQL historiques
-- `public/metrics.json` — fichier statique obsolète
-
-Le frontend n'importe ni ne dépend d'aucun de ces fichiers.
-
 ## Fonctionnalités
 
 - Métriques temps réel par projet
@@ -91,7 +79,16 @@ dash/
 │   ├── App.tsx                   # Composant principal
 │   ├── index.css                 # Design system + Tailwind
 │   ├── main.tsx                  # Point d'entrée
+│   ├── components/
+│   │   ├── ComparisonView.tsx    # Tableau comparatif multi-projets
+│   │   ├── EmptyState.tsx        # État vide par projet
+│   │   ├── ErrorState.tsx        # État erreur avec retry
+│   │   ├── KpiCard.tsx           # Carte KPI avec progress bar
+│   │   ├── ProgressBar.tsx       # Barre de progression
+│   │   ├── ProjectTab.tsx        # Onglet de projet
+│   │   └── SkeletonGrid.tsx      # Squelette de chargement
 │   └── lib/
+│       ├── freshness.ts          # Helper fraîcheur des données
 │       ├── metrics.ts            # Fetchers + métriques par projet
 │       ├── supabaseClient.ts     # Client Supabase (@supabase/supabase-js)
 │       └── trailbaseClient.ts    # Client TrailBase REST
