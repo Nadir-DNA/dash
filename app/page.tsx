@@ -5,9 +5,11 @@
  */
 import { getAllMetrics } from '@/lib/metrics/aggregator'
 import { getProjectsStatus, type ProjectStatus } from '@/lib/metrics/status'
-import { LayoutDashboard } from 'lucide-react'
+import { LayoutDashboard, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { PROJECTS, projectHref, PROJECT_STATUS_LABEL, type ProjectDef } from '@/lib/projects'
+import { isAuthConfigured } from '@/lib/auth'
+import { logout } from './login/actions'
 
 // Cockpit toujours frais (statut temps réel + lecture FS Obsidian).
 export const dynamic = 'force-dynamic'
@@ -228,7 +230,7 @@ export default async function HomePage() {
     <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <header style={{ padding: '32px 24px', borderBottom: '1px solid var(--color-border)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'var(--color-accent)', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--color-bg)' }}>
@@ -243,6 +245,22 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
+          {isAuthConfigured() && (
+            <form action={logout}>
+              <button
+                type="submit"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
+                  background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-secondary)', fontSize: 12, fontWeight: 600,
+                }}
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Déconnexion
+              </button>
+            </form>
+          )}
         </div>
       </header>
 

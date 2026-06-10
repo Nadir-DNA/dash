@@ -1,53 +1,36 @@
-import { initClient } from 'trailbase'
 import { NextResponse, type NextRequest } from 'next/server'
+import { SESSION_COOKIE, verifySession, isAuthConfigured } from '@/lib/auth'
 
-// Temporarily empty during design migration — restore after auth is set up
-const PROTECTED_PREFIXES: string[] = []
+// Routes publiques (jamais protégées).
+const PUBLIC_PREFIXES = ['/login']
 
 export async function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname
-  const isProtected = PROTECTED_PREFIXES.some(p => pathname.startsWith(p))
+  const { pathname } = request.nextUrl
 
-  if (!isProtected) {
+  if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) {
     return NextResponse.next({ request })
   }
 
-  const authToken = request.cookies.get('auth_token')?.value
-
-  if (!authToken) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
-
-  try {
-    const client = initClient(process.env.NEXT_PUBLIC_TRAILBASE_URL!, {
-      tokens: {
-        auth_token: authToken,
-        refresh_token: request.cookies.get('refresh_token')?.value ?? null,
-        csrf_token: null,
-      },
-    })
-
-    const user = client.user()
-
-    if (!user) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      return NextResponse.redirect(url)
-    }
-
+  // Si l'auth n'est pas configurée, on laisse passer mais on le signale
+  // (évite de verrouiller le cockpit avant que DASH_ACCESS_PASSWORD soit posé).
+  if (!isAuthConfigured()) {
+    console.warn('[auth] DASH_ACCESS_PASSWORD non défini — cockpit NON protégé')
     return NextResponse.next({ request })
-  } catch {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    const response = NextResponse.redirect(url)
-    response.cookies.delete('auth_token')
-    response.cookies.delete('refresh_token')
-    return response
   }
+
+  const token = request.cookies.get(SESSION_COOKIE)?.value
+  if (await verifySession(token)) {
+    return NextResponse.next({ request })
+  }
+
+  const url = request.nextUrl.clone()
+  url.pathname = '/login'
+  url.searchParams.set('from', pathname)
+  return NextResponse.redirect(url)
 }
 
 export const config = {
+  // Protège tout sauf les assets statiques et les routes API
+  // (les routes API/cron ont leur propre auth via CRON_SECRET / Bearer).
   matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'],
 }
