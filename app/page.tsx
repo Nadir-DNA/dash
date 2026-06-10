@@ -1,12 +1,16 @@
 /**
- * Dash — HOME : hub multi-projets
- * Grille 2×2 des 4 projets : Amens, SiteVitrine, LeaguePlay, FlashCert
+ * Dash — HOME : cockpit multi-projets.
+ * Une carte par projet (registre lib/projects.ts) : métriques (revenu d'abord),
+ * santé, déploiement, et avancement lu depuis Obsidian.
  */
 import { getAllMetrics } from '@/lib/metrics/aggregator'
 import { getProjectsStatus, type ProjectStatus } from '@/lib/metrics/status'
 import { LayoutDashboard } from 'lucide-react'
 import Link from 'next/link'
 import { PROJECTS, projectHref, PROJECT_STATUS_LABEL, type ProjectDef } from '@/lib/projects'
+
+// Cockpit toujours frais (statut temps réel + lecture FS Obsidian).
+export const dynamic = 'force-dynamic'
 
 /** "il y a 3 h", "il y a 2 j"… à partir d'un timestamp ms. */
 function timeAgo(ms: number): string {
@@ -29,32 +33,59 @@ const DEPLOY_LABEL: Record<string, string> = {
   ERROR: 'Échec deploy', CANCELED: 'Annulé', UNKNOWN: '—',
 }
 
-/** Bandeau santé + déploiement (n'affiche que ce qui est disponible). */
+function Dot({ color }: { color: string }) {
+  return <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, display: 'inline-block' }} />
+}
+
+const chipStyle: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--color-text-tertiary)',
+}
+
+/** Bandeau santé + déploiement + avancement (n'affiche que ce qui est disponible). */
 function StatusStrip({ status }: { status?: ProjectStatus }) {
   if (!status) return null
-  const { health, deploy } = status
-  const showHealth = health.monitored
-  const showDeploy = deploy.configured
-  if (!showHealth && !showDeploy) return null
+  const { health, deploy, advancement } = status
 
-  const healthColor = health.ok ? '#22C55E' : '#EF4444'
-  const deployColor = DEPLOY_COLOR[deploy.state] ?? '#94A3B8'
+  const chips: React.ReactNode[] = []
+
+  if (health.monitored) {
+    chips.push(
+      <span key="health" style={chipStyle}>
+        <Dot color={health.ok ? '#22C55E' : '#EF4444'} />
+        {health.ok ? `En ligne · ${health.latencyMs} ms` : 'Hors ligne'}
+      </span>,
+    )
+  }
+
+  if (deploy.configured) {
+    chips.push(
+      <span key="deploy" style={chipStyle}>
+        <Dot color={DEPLOY_COLOR[deploy.state] ?? '#94A3B8'} />
+        {DEPLOY_LABEL[deploy.state] ?? deploy.state}
+        {deploy.createdAt ? ` · ${timeAgo(deploy.createdAt)}` : ''}
+      </span>,
+    )
+  }
+
+  if (advancement.available) {
+    const { findings, tasks } = advancement
+    if (findings.p0 > 0) {
+      chips.push(<span key="p0" style={{ ...chipStyle, color: '#EF4444', fontWeight: 600 }}><Dot color="#EF4444" />{findings.p0} P0</span>)
+    }
+    if (findings.p1 > 0) {
+      chips.push(<span key="p1" style={{ ...chipStyle, color: '#F59E0B' }}><Dot color="#F59E0B" />{findings.p1} P1</span>)
+    }
+    const totalTasks = tasks.open + tasks.done
+    if (totalTasks > 0) {
+      chips.push(<span key="todo" style={chipStyle}><Dot color="#818cf8" />TODO {tasks.done}/{totalTasks}</span>)
+    }
+  }
+
+  if (chips.length === 0) return null
 
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
-      {showHealth && (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: healthColor, display: 'inline-block' }} />
-          {health.ok ? `En ligne · ${health.latencyMs} ms` : 'Hors ligne'}
-        </span>
-      )}
-      {showDeploy && (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: deployColor, display: 'inline-block' }} />
-          {DEPLOY_LABEL[deploy.state] ?? deploy.state}
-          {deploy.createdAt ? ` · ${timeAgo(deploy.createdAt)}` : ''}
-        </span>
-      )}
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
+      {chips}
     </div>
   )
 }

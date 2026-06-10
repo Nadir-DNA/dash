@@ -9,11 +9,13 @@
 import { PROJECTS } from '@/lib/projects'
 import { checkHealth, type HealthStatus } from './health'
 import { fetchLatestDeployment, type DeploymentStatus } from './vercel'
+import { readAdvancement, type Advancement } from './obsidian'
 
 export interface ProjectStatus {
   id: string
   health: HealthStatus
   deploy: DeploymentStatus
+  advancement: Advancement
 }
 
 let _cache: Record<string, ProjectStatus> | null = null
@@ -26,11 +28,12 @@ export async function getProjectsStatus(): Promise<Record<string, ProjectStatus>
 
   const entries = await Promise.all(
     PROJECTS.map(async (p): Promise<ProjectStatus> => {
-      const [health, deploy] = await Promise.all([
+      const [health, deploy, advancement] = await Promise.all([
         checkHealth(p.links?.prod),
         fetchLatestDeployment(p.vercelProject ?? p.id),
+        readAdvancement(p.obsidianNote),
       ])
-      return { id: p.id, health, deploy }
+      return { id: p.id, health, deploy, advancement }
     }),
   )
 
