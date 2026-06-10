@@ -65,7 +65,10 @@ async function fetchLeads(project: string, page: number): Promise<{ records: Lea
   const offset = page * PAGE_SIZE
   const isVitrine = project === 'sitevitrine'
   const endpoint = isVitrine ? '/api/sitevitrine' : '/api/contacts'
-  const res = await fetch(`${endpoint}?limit=${PAGE_SIZE}&offset=${offset}&count=true`)
+  // Cloisonnement : on transmet le projet courant pour filtrer les contacts.
+  // (l'API ignore les vues globales 'crm'/'general' et retombe sans filtre si besoin)
+  const projectParam = isVitrine ? '' : `&project_id=${encodeURIComponent(project)}`
+  const res = await fetch(`${endpoint}?limit=${PAGE_SIZE}&offset=${offset}&count=true${projectParam}`)
   if (!res.ok) throw new Error('fetch error')
   return res.json()
 }

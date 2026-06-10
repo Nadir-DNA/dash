@@ -2,19 +2,41 @@ import { NextResponse } from 'next/server'
 
 const TRAILBASE = process.env.NEXT_PUBLIC_TRAILBASE_URL || 'http://localhost:4000'
 
-// GET /api/contacts?stage=new&limit=100&offset=0&count=true
+// GET /api/contacts?stage=new&limit=100&offset=0&count=true&project_id=amens
+//
+// Cloisonnement : si project_id est fourni (et n'est pas une vue globale),
+// on filtre les contacts par projet. Repli défensif : si la colonne
+// project_id n'existe pas encore en base, on retombe sur la liste non filtrée
+// au lieu de casser la page.
+const GLOBAL_VIEWS = new Set(['', 'general', 'crm'])
+
+function buildUrl(opts: { limit: string; offset: string; count: boolean; stage: string | null; projectId: string | null }): string {
+  let url = `${TRAILBASE}/api/records/v1/contacts?limit=${opts.limit}&offset=${opts.offset}&order=-created_at`
+  if (opts.count) url += '&count=true'
+  if (opts.stage) url += `&filter=stage%3D'${encodeURIComponent(opts.stage)}'`
+  if (opts.projectId && !GLOBAL_VIEWS.has(opts.projectId)) {
+    url += `&filter=project_id%3D'${encodeURIComponent(opts.projectId)}'`
+  }
+  return url
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const stage = searchParams.get('stage')
   const limit = searchParams.get('limit') ?? '100'
   const offset = searchParams.get('offset') ?? '0'
   const count = searchParams.get('count') === 'true'
+  const projectId = searchParams.get('project_id')
 
-  let url = `${TRAILBASE}/api/records/v1/contacts?limit=${limit}&offset=${offset}&order=-created_at`
-  if (count) url += '&count=true'
-  if (stage) url += `&filter=stage%3D'${encodeURIComponent(stage)}'`
+  const opts = { limit, offset, count, stage, projectId }
+  let res = await fetch(buildUrl(opts))
 
-  const res = await fetch(url)
+  // Repli si le filtre project_id échoue (colonne absente) : on réessaie sans.
+  if (!res.ok && projectId && !GLOBAL_VIEWS.has(projectId)) {
+    console.warn(`[contacts] filtre project_id='${projectId}' rejeté — repli sans cloisonnement`)
+    res = await fetch(buildUrl({ ...opts, projectId: null }))
+  }
+
   if (!res.ok) return NextResponse.json({ error: 'TrailBase error' }, { status: res.status })
   const data = await res.json()
   return NextResponse.json(data)

@@ -5,16 +5,23 @@ import Link from 'next/link'
 import { LayoutDashboard, Users, Calendar, Menu, X, ChevronDown, Trello } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { PROJECTS as REGISTRY } from '@/lib/projects'
 
-export const PROJECTS = [
-  { id: 'general',     label: 'Général',      color: '#F59E0B', separator: false },
-  { id: 'crm',         label: 'CRM',          color: '#FFFFFF',  separator: true },
-  { id: 'sitevitrine', label: 'SiteVitrine',  color: '#818cf8', separator: false },
-  { id: 'flashcert',   label: 'FlashCert',    color: '#a855f7', separator: false },
-  { id: 'leagueplay',  label: 'LeaguePlay',   color: '#F59E0B', separator: false },
-] as const
+// Entrées spéciales (pas des projets du registre) :
+//   - general : vue consolidée tous projets
+//   - crm     : leads internes du CRM (non rattachés à un projet)
+const SPECIAL = [
+  { id: 'general', label: 'Général', color: '#F59E0B', separator: false },
+  { id: 'crm',     label: 'CRM',     color: '#FFFFFF', separator: true },
+]
 
-export type ProjectId = typeof PROJECTS[number]['id']
+// Source de vérité unique : entrées spéciales + registre de projets.
+export const PROJECTS: { id: string; label: string; color: string; separator: boolean }[] = [
+  ...SPECIAL,
+  ...REGISTRY.map(p => ({ id: p.id, label: p.name, color: p.color, separator: false })),
+]
+
+export type ProjectId = string
 
 const NAV = [
   { href: '/dashboard', label: 'Dashboard',  icon: LayoutDashboard, tooltip: 'Vue d\'ensemble' },
