@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react'
+import { PROJECTS } from '@/lib/projects'
 
 interface Project {
   id: string
@@ -19,12 +20,9 @@ const ProjectContext = createContext<ProjectContextType | undefined>(undefined)
 export function ProjectProvider({ children }: { children: ReactNode }) {
   const [currentProject, setCurrentProject] = useState<Project | null>(null)
   const [loading] = useState(false)
-  
-  const projects: Project[] = [
-    { id: 'dash', name: 'Dash' },
-    { id: 'sitevitrine', name: 'Site Vitrine' },
-    { id: 'amens', name: 'Amens' },
-  ]
+
+  // Source de vérité unique : le registre de projets
+  const projects: Project[] = PROJECTS.map((p) => ({ id: p.id, name: p.name }))
 
   return (
     <ProjectContext.Provider value={{ 
