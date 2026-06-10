@@ -4,9 +4,11 @@
  */
 
 import type { Metric, ProjectMetricsPayload } from '../types';
+import { fetchStripeRevenue } from '../stripe';
 
 const AMENS_URL = process.env.AMENS_SUPABASE_URL || 'https://ntsbywucjgusewcgblhz.supabase.co';
 const AMENS_KEY = process.env.AMENS_SUPABASE_SERVICE_ROLE_KEY || '';
+const AMENS_STRIPE_KEY = process.env.AMENS_STRIPE_SECRET_KEY;
 
 const BASE = `${AMENS_URL}/rest/v1`;
 
@@ -108,23 +110,39 @@ async function getUsersMetrics(): Promise<Metric[]> {
   return [metric('users_total', total, 1000, 'count', 0, 'Utilisateurs inscrits')];
 }
 
-async function getSubscriptionsMetrics(): Promise<Metric[]> {
-  const active = await count('subscriptions', 'status', 'active');
+/**
+ * Revenu — priorité du cockpit.
+ * MRR réel via Stripe si la clé est présente, sinon estimation (29€/abonnement actif).
+ * Renvoyé en TÊTE des métriques Amens pour piloter la carte du cockpit.
+ */
+async function getRevenueMetrics(): Promise<Metric[]> {
+  const activeFromDb = await count('subscriptions', 'status', 'active');
+
+  const revenue = await fetchStripeRevenue(AMENS_STRIPE_KEY).catch(() => null);
+  if (!revenue || !revenue.live) {
+    // Repli : estimation à partir des abonnements actifs en base
+    return [
+      metric('revenue_mrr', activeFromDb * 29, 2900, '€', 0, 'MRR estimé (29€/sub)'),
+      metric('subscriptions_active', activeFromDb, 100, 'count', 0, 'Abonnements actifs'),
+    ];
+  }
+
   return [
-    metric('subscriptions_active', active, 100, 'count', 0, 'Abonnements actifs'),
-    metric('revenue_mrr_estimated', active * 29, 2900, '€', 0, 'MRR estimé (29€/sub)'),
+    metric('revenue_mrr', revenue.mrr, 2900, '€', 0, 'MRR (Stripe)'),
+    metric('subscriptions_active', revenue.activeSubscriptions, 100, 'count', 0, 'Abonnements actifs'),
   ];
 }
 
 export async function fetchAmensMetrics(): Promise<ProjectMetricsPayload> {
   const timestamp = new Date().toISOString();
   try {
+    // Revenu en premier (priorité cockpit), puis le reste.
     const results = await Promise.allSettled([
+      getRevenueMetrics(),
       getBookingsMetrics(),
       getProfessionalsMetrics(),
       getReviewsMetrics(),
       getUsersMetrics(),
-      getSubscriptionsMetrics(),
     ]);
     const metrics: Metric[] = [];
     for (const result of results) {
