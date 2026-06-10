@@ -48,6 +48,11 @@ export interface ProjectDef {
    */
   table?: string
   nameField?: string
+  /**
+   * Nom du projet côté Vercel (pour la tuile déploiement).
+   * Si absent, l'id est utilisé. Renseigner si le nom Vercel diffère de l'id.
+   */
+  vercelProject?: string
   /** note Obsidian (source de vérité de l'avancement) */
   obsidianNote?: string
 }
