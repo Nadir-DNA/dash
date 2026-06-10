@@ -3,9 +3,61 @@
  * Grille 2×2 des 4 projets : Amens, SiteVitrine, LeaguePlay, FlashCert
  */
 import { getAllMetrics } from '@/lib/metrics/aggregator'
+import { getProjectsStatus, type ProjectStatus } from '@/lib/metrics/status'
 import { LayoutDashboard } from 'lucide-react'
 import Link from 'next/link'
 import { PROJECTS, projectHref, PROJECT_STATUS_LABEL, type ProjectDef } from '@/lib/projects'
+
+/** "il y a 3 h", "il y a 2 j"… à partir d'un timestamp ms. */
+function timeAgo(ms: number): string {
+  const diff = Date.now() - ms
+  const min = Math.round(diff / 60000)
+  if (min < 1) return "à l'instant"
+  if (min < 60) return `il y a ${min} min`
+  const h = Math.round(min / 60)
+  if (h < 24) return `il y a ${h} h`
+  const d = Math.round(h / 24)
+  return `il y a ${d} j`
+}
+
+const DEPLOY_COLOR: Record<string, string> = {
+  READY: '#22C55E', BUILDING: '#F59E0B', QUEUED: '#F59E0B', INITIALIZING: '#F59E0B',
+  ERROR: '#EF4444', CANCELED: '#94A3B8', UNKNOWN: '#94A3B8',
+}
+const DEPLOY_LABEL: Record<string, string> = {
+  READY: 'Déployé', BUILDING: 'Build…', QUEUED: 'En file', INITIALIZING: 'Init…',
+  ERROR: 'Échec deploy', CANCELED: 'Annulé', UNKNOWN: '—',
+}
+
+/** Bandeau santé + déploiement (n'affiche que ce qui est disponible). */
+function StatusStrip({ status }: { status?: ProjectStatus }) {
+  if (!status) return null
+  const { health, deploy } = status
+  const showHealth = health.monitored
+  const showDeploy = deploy.configured
+  if (!showHealth && !showDeploy) return null
+
+  const healthColor = health.ok ? '#22C55E' : '#EF4444'
+  const deployColor = DEPLOY_COLOR[deploy.state] ?? '#94A3B8'
+
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
+      {showHealth && (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: healthColor, display: 'inline-block' }} />
+          {health.ok ? `En ligne · ${health.latencyMs} ms` : 'Hors ligne'}
+        </span>
+      )}
+      {showDeploy && (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: deployColor, display: 'inline-block' }} />
+          {DEPLOY_LABEL[deploy.state] ?? deploy.state}
+          {deploy.createdAt ? ` · ${timeAgo(deploy.createdAt)}` : ''}
+        </span>
+      )}
+    </div>
+  )
+}
 
 function IconBox({ icon: Icon, color }: { icon: React.ElementType; color: string }) {
   return (
@@ -59,9 +111,10 @@ function StatusPill({ project }: { project: ProjectDef }) {
   )
 }
 
-function ProjectCard({ project, metrics }: {
+function ProjectCard({ project, metrics, status }: {
   project: ProjectDef
   metrics: { key: string; value: number; unit: string; description: string }[]
+  status?: ProjectStatus
 }) {
   // Pick the most relevant metrics for each project
   const main = metrics?.[0]
@@ -121,6 +174,9 @@ function ProjectCard({ project, metrics }: {
             Non configuré
           </div>
         )}
+
+        {/* Santé + déploiement */}
+        <StatusStrip status={status} />
       </div>
     </Link>
   )
@@ -128,14 +184,13 @@ function ProjectCard({ project, metrics }: {
 
 export default async function HomePage() {
   let projectsMetrics: { project: string; metrics: { key: string; value: number; unit: string; description: string }[] }[] = []
-  try {
-    const all = await getAllMetrics()
-    projectsMetrics = all.projects.map(p => ({
-      project: p.project,
-      metrics: p.metrics,
-    }))
-  } catch {
-    // Silently degrade
+  let statusMap: Record<string, ProjectStatus> = {}
+  const [metricsRes, statusRes] = await Promise.allSettled([getAllMetrics(), getProjectsStatus()])
+  if (metricsRes.status === 'fulfilled') {
+    projectsMetrics = metricsRes.value.projects.map(p => ({ project: p.project, metrics: p.metrics }))
+  }
+  if (statusRes.status === 'fulfilled') {
+    statusMap = statusRes.value
   }
 
   return (
@@ -185,6 +240,7 @@ export default async function HomePage() {
                 key={project.id}
                 project={project}
                 metrics={pm?.metrics ?? []}
+                status={statusMap[project.id]}
               />
             )
           })}
