@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/trailbase/server'
 import Link from 'next/link'
+import { getProject } from '@/lib/projects'
 
-const PROJECTS_META = [
-  { id: 'crm',         label: 'CRM',         color: '#FFFFFF',  href: '/dashboard?p=crm',         table: 'contacts',         nameField: 'first_name' },
-  { id: 'sitevitrine', label: 'SiteVitrine',  color: '#818cf8',  href: '/dashboard?p=sitevitrine',  table: 'sitevitrine_sites', nameField: 'name' },
-  { id: 'flashcert',   label: 'FlashCert',    color: '#a855f7',  href: '/dashboard?p=flashcert',    table: 'flashcert_users',  nameField: 'email' },
-  { id: 'leagueplay',  label: 'LeaguePlay',   color: '#F59E0B',  href: '/dashboard?p=leagueplay',   table: 'leagueplay_players', nameField: 'username' },
-] as const
+// Libellés/couleurs dérivés du registre unique (lib/projects.ts) pour éviter
+// toute divergence. 'crm' est la base interne (pas un projet du cockpit).
+function meta(id: string, fallbackLabel: string, fallbackColor: string) {
+  const p = getProject(id)
+  return { label: p?.name ?? fallbackLabel, color: p?.color ?? fallbackColor }
+}
 
 function startOfMonth() {
   const d = new Date()
@@ -33,7 +34,7 @@ export async function GeneralDashboard() {
 
   const projectStats = [
     {
-      id: 'crm', label: 'CRM', color: '#FFFFFF',
+      id: 'crm', ...meta('crm', 'CRM', '#FFFFFF'),
       total: contacts.length,
       thisMonth: contacts.filter(r => (r.created_at as string) >= som).length,
       won: contacts.filter(r => r.stage === 'won').length,
@@ -45,7 +46,7 @@ export async function GeneralDashboard() {
       })),
     },
     {
-      id: 'sitevitrine', label: 'SiteVitrine', color: '#818cf8',
+      id: 'sitevitrine', ...meta('sitevitrine', 'SiteVitrine', '#818cf8'),
       total: sites.length,
       thisMonth: sites.filter(r => (r.created_at as string) >= som).length,
       won: sites.filter(r => r.status === 'deployed').length,
@@ -57,7 +58,7 @@ export async function GeneralDashboard() {
       })),
     },
     {
-      id: 'flashcert', label: 'FlashCert', color: '#a855f7',
+      id: 'flashcert', ...meta('flashcert', 'FlashCert', '#a855f7'),
       total: flashcertUsers.length,
       thisMonth: flashcertUsers.filter(r => (r.created_at as string) >= som).length,
       won: 0,
@@ -69,7 +70,7 @@ export async function GeneralDashboard() {
       })),
     },
     {
-      id: 'leagueplay', label: 'LeaguePlay', color: '#F59E0B',
+      id: 'leagueplay', ...meta('leagueplay', 'LeaguePlay', '#F59E0B'),
       total: leagueplayPlayers.length,
       thisMonth: leagueplayPlayers.filter(r => (r.created_at as string) >= som).length,
       won: 0,

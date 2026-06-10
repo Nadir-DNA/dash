@@ -3,15 +3,9 @@
  * Grille 2×2 des 4 projets : Amens, SiteVitrine, LeaguePlay, FlashCert
  */
 import { getAllMetrics } from '@/lib/metrics/aggregator'
-import { LayoutDashboard, Globe, Swords, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard } from 'lucide-react'
 import Link from 'next/link'
-
-const PROJECTS = [
-  { id: 'amens',    name: 'Amens',      tagline: 'Bien-être & rendez-vous', icon: LayoutDashboard, color: '#22C55E', href: '/dashboard?p=amens' },
-  { id: 'sitevitrine', name: 'SiteVitrine', tagline: 'Sites professionnels', icon: Globe,            color: '#818cf8', href: '/dashboard?p=sitevitrine' },
-  { id: 'leagueplay',  name: 'LeaguePlay',  tagline: 'Sport & communauté',   icon: Swords,           color: '#F59E0B', href: '/dashboard?p=leagueplay' },
-  { id: 'flashcert', name: 'FlashCert',  tagline: 'Formation & CPF',        icon: ShieldCheck,      color: '#a855f7', href: '/dashboard?p=flashcert' },
-] as const
+import { PROJECTS, projectHref, PROJECT_STATUS_LABEL, type ProjectDef } from '@/lib/projects'
 
 function IconBox({ icon: Icon, color }: { icon: React.ElementType; color: string }) {
   return (
@@ -48,8 +42,25 @@ function MetricRow({ label, value, unit }: { label: string; value: string | numb
   )
 }
 
+function StatusPill({ project }: { project: ProjectDef }) {
+  const color = project.status === 'production' ? '#22C55E'
+    : project.status === 'build' ? '#F59E0B'
+    : project.status === 'paused' ? '#94A3B8'
+    : '#818cf8'
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600,
+      background: `${color}1a`, color,
+    }}>
+      <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, display: 'inline-block' }} />
+      {PROJECT_STATUS_LABEL[project.status]}
+    </span>
+  )
+}
+
 function ProjectCard({ project, metrics }: {
-  project: typeof PROJECTS[number]
+  project: ProjectDef
   metrics: { key: string; value: number; unit: string; description: string }[]
 }) {
   // Pick the most relevant metrics for each project
@@ -58,7 +69,7 @@ function ProjectCard({ project, metrics }: {
 
   return (
     <Link
-      href={project.href}
+      href={projectHref(project.id)}
       style={{ display: 'block', textDecoration: 'none' }}
       className="group"
     >
@@ -75,10 +86,13 @@ function ProjectCard({ project, metrics }: {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <IconBox icon={project.icon} color={project.color} />
-          <div>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 16, color: 'var(--color-text)' }}>
-              {project.name}
-            </h3>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 16, color: 'var(--color-text)' }}>
+                {project.name}
+              </h3>
+              <StatusPill project={project} />
+            </div>
             <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 1 }}>{project.tagline}</p>
           </div>
         </div>
